@@ -139,7 +139,7 @@ if ($('#canvas2').length > 0) {
       
       if (mh.info.note === 0){
         const velocity = (mh.info.velocity) ? mh.info.velocity : 0.01;
-        const mapVelocity = sk.map(velocity, 0, 127, 0.01, 0.9);
+        const mapVelocity = sk.map(velocity, 0, 127, 0.01, 0.6);
         const mapSkewX = sk.map(bass, 0, 255, -5, 5);
 
         if (prevVelocity !== mapVelocity){
@@ -225,15 +225,14 @@ if ($('#canvas3').length > 0) {
       layer3Images.push(sk.loadImage('../images/collage/layer3_02.png'));
       layer3Images.push(sk.loadImage('../images/collage/layer3_03.png'));
       layer3Images.push(sk.loadImage('../images/collage/layer3_04.png'));
-      layer3Images.push(sk.loadImage('../images/collage/layer3_05.png'));
-      layer3Images.push(sk.loadImage('../images/collage/layer3_06.png'));
-      layer3Images.push(sk.loadImage('../images/collage/layer3_07.png'));
     }
 
     sk.setup = async () => {
       const canvas = sk.createCanvas(sk.windowWidth, sk.windowHeight);
       canvas.parent('canvas3');
       sk.imageMode(sk.CENTER);
+
+      sk.frameRate(30);
 
       layer1Items = generateCollageItems(layer1Images, 100, sk.width / 2, sk.height / 2, sk.width, sk.height, 0.1, 0.5, 0, 0);
       layer2Items = generateCollageItems(layer2Images, 150, sk.width / 2, sk.height / 2, sk.width, sk.height, 0.1, 0.3, -sk.HALF_PI, sk.HALF_PI);
@@ -246,12 +245,12 @@ if ($('#canvas3').length > 0) {
 
     sk.draw = () => {
       const velocity = (mh.info.velocity) ? mh.info.velocity : 0.01;
-
+      sk.frameRate(30);
       if (mh.info.note === 7) {
         const mapVelocity = sk.map(velocity, 0, 127, 1, 4);
         if (mapVelocity > 1 || 2 >= mapVelocity) layer1Items = generateCollageItems(layer1Images, sk.random(5, 15), sk.width / 2, sk.height / 2, sk.width, sk.height, 0.1, 0.5, 0, 0);
-        if (mapVelocity > 2 || 3 >= mapVelocity) layer2Items = generateCollageItems(layer2Images, sk.random(5, 8), sk.width / 2, sk.height / 2, sk.width, sk.height, 0.1, sk.random(0.3, 0.8), -sk.HALF_PI, sk.HALF_PI);
-        if ( 3 <= mapVelocity) layer3Items = generateCollageItems(layer3Images, sk.random(10, 60), sk.width / 2, sk.height / 2, sk.width, sk.height, 0.1, sk.random(0.2, 0.6), -sk.HALF_PI, sk.HALF_PI);
+        if (mapVelocity > 2 || 3 >= mapVelocity) layer2Items = generateCollageItems(layer2Images, sk.random(5, 8), sk.width / 6, sk.height / 6, sk.width, sk.height, 0.1, sk.random(0.3, 0.8), -sk.HALF_PI, sk.HALF_PI);
+        if ( 3 <= mapVelocity) layer3Items = generateCollageItems(layer3Images, sk.random(10, 60), sk.width / 2, sk.height / 2, sk.width / 2, sk.height / 2, 0.1, sk.random(0.2, 0.6), -sk.HALF_PI, sk.HALF_PI);
 
         sk.clear();
 
@@ -265,7 +264,7 @@ if ($('#canvas3').length > 0) {
       if (key.key == 's' || key.key == 'S') saveCanvas(gd.timestamp(), 'png');
       if (key.key == '1') layer1Items = generateCollageItems(layer1Images, sk.random(5, 15), sk.width / 2, sk.height / 2, sk.width, sk.height, 0.1, 0.5, 0, 0);
       if (key.key == '2') layer2Items = generateCollageItems(layer2Images, sk.random(5, 8), sk.width / 2, sk.height / 2, sk.width, sk.height, 0.1, sk.random(0.3, 0.8), -sk.HALF_PI, sk.HALF_PI);
-      if (key.key == '3') layer3Items = generateCollageItems(layer3Images, sk.random(10, 60), sk.width / 2, sk.height / 2, sk.width, sk.height, 0.1, sk.random(0.2, 0.6), -sk.HALF_PI, sk.HALF_PI);
+      if (key.key == '3') layer3Items = generateCollageItems(layer3Images, sk.random(50, 100), sk.width / 2, sk.height / 2, sk.width, sk.height, 0.5, sk.random(0.6, 0.8), -sk.HALF_PI, sk.HALF_PI);
 
       sk.clear();
 

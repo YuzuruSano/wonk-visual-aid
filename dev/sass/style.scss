@@ -1,0 +1,79 @@
+@charset "UTF-8";
+/* base
+----------------------- */
+@import "base/setting.scss";
+@import "helper/mixin.scss";
+@import "base/reset.scss";
+@import "fonts/font.scss";
+/* layout
+----------------------- */
+@import "layout/*";
+/* component
+----------------------- */
+@import "component/*";
+/* page
+----------------------- */
+@import "page/*";
+body {
+    background-color: #000;
+}
+#wrap {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+#canvas, #canvas2,#canvas3 {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+}
+#canvas {
+    z-index: 100;
+}
+#canvas2 {
+    opacity: 0.3;
+    z-index: 102;
+    width: 150%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    margin:auto;
+    margin-left:-100px;
+}
+#canvas3 {
+    opacity: 0.5;
+    z-index:101;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    margin:auto;
+}
+svg {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+iframe {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%) scale(0.65,0.65);
+    opacity: 0.7;
+}
+
+#wrap > img {
+    z-index: 2;
+}

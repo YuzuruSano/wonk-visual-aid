@@ -1,0 +1,21 @@
+doctype html
+html
+	head
+		title #{site}
+		meta(name="viewport" content="width=device-width")
+		link(href=`https://fonts.googleapis.com/earlyaccess/nicomoji.css` rel="stylesheet" type="text/css" media="all")
+		link(href=`${staticPath}css/style.css` rel="stylesheet" type="text/css" media="all")
+		script(src="https://code.jquery.com/jquery-1.11.1.js")
+		script(src=`/socket.io/socket.io.js`)
+	body
+		#wrap.controller
+			.controller-inner
+				.frame_wrap 
+					iframe(src=`${url}`, width="100%", height="300")
+					div.ctrl-btn.js-ctrl-btn
+						div(data-note="24")
+							.inner 車
+		if env == 'production'
+			script(src=`${staticPath}js/vendor.bundle.js`)
+
+		script(src=`${staticPath}js/bundle.js`)

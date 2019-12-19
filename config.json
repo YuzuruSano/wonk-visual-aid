@@ -1,0 +1,12 @@
+{
+    "development": {
+        "site": "▼▼1/K",
+        "staticPath": "/",
+        "url": "http://localhost:5000"
+    },
+    "production": {
+        "site": "▼▼1/K",
+        "staticPath": "/assets/",
+        "url": "https://mysterious-coast-74606.herokuapp.com/"
+    }
+}

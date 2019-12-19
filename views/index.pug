@@ -1,0 +1,18 @@
+doctype html
+html
+	head
+		title #{site}
+		meta(name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,minimum-scale=1.0,maximum-scale=1.0")
+		link(href=`https://fonts.googleapis.com/earlyaccess/nicomoji.css` rel="stylesheet" type="text/css" media="all")
+		link(href=`${staticPath}css/style.css` rel="stylesheet" type="text/css" media="all")
+		script(src="https://code.jquery.com/jquery-1.11.1.js")
+	body
+		#result-div
+		#wrap
+			#canvas
+			#canvas2
+			#canvas3
+		if env == 'production'
+			script(src=`${staticPath}js/vendor.bundle.js`)
+
+		script(src=`${staticPath}js/bundle.js`)

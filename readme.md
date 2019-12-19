@@ -1,3 +1,6 @@
+VJ framework using Web MIDI API and p5.js.  
+*Assumes linkage with ableton Live 10
+
 # Environment
 
 - node v12.3.1

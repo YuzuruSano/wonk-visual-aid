@@ -21,5 +21,5 @@ yarn dev
 ## Production run
 
 ```
-yarn produciton
+yarn build-local
 ```

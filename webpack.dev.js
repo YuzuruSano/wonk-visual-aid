@@ -96,7 +96,10 @@ module.exports = {
     },
     performance: { hints: false },
     plugins: [
-        new CopyWebpackPlugin([{ from: "./dev/images", to: "images/" }]),
+        new CopyWebpackPlugin([
+            { from: "./dev/images", to: "images/" },
+            { from: './dev/fonts', to: 'fonts/' },
+        ]),
         new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery",

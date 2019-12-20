@@ -6,6 +6,7 @@ import LoadImg from "modules/LoadImg";
 import effLines from "modules/effLines";
 import effPulse from "modules/effPulse";
 import effImgCollage from "modules/effImgCollage";
+import effFonts from "modules/effFonts";
 import 'p5/lib/addons/p5.sound';
 import * as p5 from 'p5';
 
@@ -208,6 +209,7 @@ if ($('#canvas2').length > 0) {
  */
 effImgCollage(mh);
 
+effFonts(mh, fft);
 
 if (module.hot) {
   module.hot.accept();

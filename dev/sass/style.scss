@@ -88,3 +88,14 @@ iframe {
 #wrap > img {
     z-index: 2;
 }
+
+body.reset {
+    background-color: #ffffff;
+    canvas {
+        display: none;
+    }
+    #canvas4 canvas,
+    #canvas3 canvas {
+        display: block;
+    }
+}

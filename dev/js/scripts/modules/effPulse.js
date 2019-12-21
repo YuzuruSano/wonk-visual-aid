@@ -9,6 +9,7 @@ export default class effPulse {
     }
 
     exChangeVelocity(note, Velocity, sk){
+
         if (this.mh.info.note == note) {
             const velocity = (this.mh.info.velocity) ? this.mh.info.velocity : 0.01;
             const mapVelocity = sk.map(velocity, 0, 127, 0.01, 1);

@@ -8,13 +8,12 @@ class Letter {
         this.y = y;
         this.density = 10;
         this.sk = sk;
-        this.shapeColor = sk.color(255);
     }
    
-    draw(pathSampleFactor, ribbonWidth, font, fontSize) {
+    draw(pathSampleFactor, ribbonWidth, font, fontSize, color = 255) {
         const sk = this.sk;
         const path = font.textToPoints(this.char, this.x, this.y, fontSize, { sampleFactor: pathSampleFactor });
-        sk.stroke(this.shapeColor);
+        sk.stroke(color);
 
         for (let d = 0; d < ribbonWidth; d += this.density) {
             sk.beginShape();
@@ -40,14 +39,17 @@ class Letter {
     };
 }
 
-export default function effFonts(mh, fft) {
+export default function effFonts(mh, fft, mct) {
     if ($('#canvas4').length > 0) {
         let s = (sk) => {
-            let letters = [];
             let fontSize = 800;
+            let fontColor = 255;
             let pathSimplification = 0;
-
-            let textTyped = ':)1/K';
+            
+            const types = [];
+            let textTypes = [
+                ':)1/K','AXIS','BIAS','WOND'
+            ];
 
             let font;
 
@@ -64,6 +66,15 @@ export default function effFonts(mh, fft) {
             }
 
             sk.draw = () => {
+                console.log(mct.is_reset);
+                if (mct.is_reset) {
+                    fontSize = 900;
+                    fontColor = 0;
+                }else{
+                    fontSize = 800;
+                    fontColor = 255;
+                }
+
                 sk.clear();
                 sk.translate(100, sk.height * 0.75);
 
@@ -77,23 +88,43 @@ export default function effFonts(mh, fft) {
                 const pathSampleFactor = 0.1 * sk.pow(0.02, mapMid / sk.width);
                 const ribbonWidth = sk.map(mapTreble, 0, sk.height, 1, treble);
 
-                for (var i = 0; i < letters.length; i++) {
-                    letters[i].draw(pathSampleFactor, ribbonWidth, font, fontSize);
+                let TypeIndex = 0;
+                switch (mh.info.note) {
+                    case 32:
+                        TypeIndex = 0;
+                        break;
+                    case 33:
+                        TypeIndex = 1;
+                        break;
+                    case 34:
+                        TypeIndex = 2;
+                        break;
+                    case 35:
+                        TypeIndex = 3;
+                        break;
+                    default:
+                        break;
+                }
+                for (var i = 0; i < types[TypeIndex].length; i++) {
+                    types[TypeIndex][i].draw(pathSampleFactor, ribbonWidth, font, fontSize, fontColor);
                 }
             }
 
             const createLetters = () => {
-                letters = [];
-                const chars = textTyped.split('');
-                
-                let x = 0;
-                for (let i = 0; i < chars.length; i++) {
-                    if (i > 0) {
-                        const charsBefore = textTyped.substring(0, i);
-                        x = font.textBounds(charsBefore, 0, 0, fontSize).w;
+                for (let index = 0; index < textTypes.length; index++) {
+                    const chars = textTypes[index];
+                    let x = 0;
+                    let letters = [];
+                    for (let i = 0; i < chars.length; i++) {
+                        if (i > 0) {
+                            const charsBefore = chars.substring(0, i);
+                            x = font.textBounds(charsBefore, 0, 0, fontSize).w;
+                        }
+                        const newLetter = new Letter(chars[i], x, 0, sk);
+                        letters.push(newLetter);
                     }
-                    const newLetter = new Letter(chars[i], x, 0, sk);
-                    letters.push(newLetter);
+
+                    types.push(letters);
                 }
             }
         }

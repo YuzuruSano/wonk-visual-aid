@@ -7,6 +7,7 @@ import effLines from "modules/effLines";
 import effPulse from "modules/effPulse";
 import effImgCollage from "modules/effImgCollage";
 import effFonts from "modules/effFonts";
+import MidiControllTrait from "modules/MidiControllTrait";
 import 'p5/lib/addons/p5.sound';
 import * as p5 from 'p5';
 
@@ -33,7 +34,6 @@ let mh;
 let mic;
 let fft;
 
-
 mic = new p5.AudioIn();
 mic.start();
 fft = new p5.FFT();
@@ -43,6 +43,8 @@ const lines = new effLines(mh);
 const pulse = new effPulse(mh);
 let drawLine = false;
 let drawPulse = false;
+
+const mct = new MidiControllTrait(mh);
 
 if ($('#canvas').length > 0){
   let s = (sk) => {
@@ -67,6 +69,8 @@ if ($('#canvas').length > 0){
     }
 
     sk.draw = () => {
+      mct.reset();
+      
       if (mh.info.note == 48){
         if(mh.info.velocity == 127){
           drawLine = true;
@@ -207,9 +211,9 @@ if ($('#canvas2').length > 0) {
 /**
  * img collage
  */
-effImgCollage(mh);
+effImgCollage(mh, mct);
 
-effFonts(mh, fft);
+effFonts(mh, fft, mct);
 
 if (module.hot) {
   module.hot.accept();

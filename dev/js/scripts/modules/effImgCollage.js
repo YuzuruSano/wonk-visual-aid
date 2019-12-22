@@ -2,7 +2,7 @@ import * as p5 from 'p5';
 
 export default function effImgCollage(mh){
     if ($('#canvas3').length > 0) {
-        let sss = (sk) => {
+        let s = (sk) => {
             let layer1Images = [];
             let layer2Images = [];
             let layer3Images = [];
@@ -10,6 +10,8 @@ export default function effImgCollage(mh){
             let layer1Items = [];
             let layer2Items = [];
             let layer3Items = [];
+
+            let is_fill = false;
             sk.preload = () => {
                 layer1Images.push(sk.loadImage('../images/collage/layer1_01.png'));
                 layer1Images.push(sk.loadImage('../images/collage/layer1_02.png'));
@@ -43,7 +45,19 @@ export default function effImgCollage(mh){
             }
 
             sk.draw = () => {
+                if (mh.info.note == 49 && mh.info.velocity == 127) {
+                    is_fill = true;
+                } else if(mh.info.note == 49 && mh.info.velocity == 0) {
+                    is_fill = false;
+                }
+                
+                if (!is_fill){
+                    sk.clear();
+                    return;
+                }
+
                 const velocity = (mh.info.velocity) ? mh.info.velocity : 0.01;
+
                 sk.frameRate(30);
                 if (mh.info.note === 7) {
                     const mapVelocity = sk.map(velocity, 0, 127, 1, 4);
@@ -60,10 +74,10 @@ export default function effImgCollage(mh){
             }
 
             function generateCollageItems(layerImages, count, posX, posY, rangeX, rangeY, scaleStart, scaleEnd, rotationStart, rotationEnd) {
-                var layerItems = [];
-                for (var i = 0; i < count; i++) {
-                    var index = i % layerImages.length;
-                    var item = new CollageItem(layerImages[index]);
+                let layerItems = [];
+                for (let i = 0; i < count; i++) {
+                    const index = i % layerImages.length;
+                    const item = new CollageItem(layerImages[index]);
                     item.x = posX + sk.random(-rangeX / 2, rangeX / 2);
                     item.y = posY + sk.random(-rangeY / 2, rangeY / 2);
                     item.scaling = sk.random(scaleStart, scaleEnd);
@@ -82,7 +96,7 @@ export default function effImgCollage(mh){
             }
 
             function drawCollageItems(layerItems) {
-                for (var i = 0; i < layerItems.length; i++) {
+                for (let i = 0; i < layerItems.length; i++) {
                     sk.push();
                     sk.translate(layerItems[i].x, layerItems[i].y);
                     sk.rotate(layerItems[i].rotation);
@@ -93,6 +107,6 @@ export default function effImgCollage(mh){
             }
         }
 
-        const P5_3 = new p5(sss);
+        const P5 = new p5(s);
     }
 }

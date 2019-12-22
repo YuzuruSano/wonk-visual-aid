@@ -4,29 +4,40 @@ let R = 180;
 export default class effLines {
     constructor(mh) {
         this.mh = mh;
+        this.is_fill = false;
     }
 
     exec(bass, mid, treble, spectrum, sk){
+        if (this.mh.info.note == 64 && this.mh.info.velocity > 0) {
+            this.is_fill = true;
+        } else {
+            this.is_fill = false;
+        }
+
         const mapBass = sk.map(bass, 0, 255, 0, sk.width);
         const mapMid = sk.map(mid, 0, 255, 1, 2);
         const mapTreble = sk.map(treble, 0, 255, 2, 6);
+        
+        const mapMidWeight = sk.map(mid, 0, 255, 0.2, 1);
+        const mapTrebleWeight = sk.map(treble, 0, 255, 0.2, 1);
 
-        const mapBassWeight = sk.map(bass, 0, 255, 0.001, 0.1);
-        const mapMidWeight = sk.map(mid, 0, 255, 0.001, 0.1);
-        const mapTrebleWeight = sk.map(treble, 0, 255, 0.001, 0.1);
-
-        const mapBassOP = sk.map(bass, 0, 255, 0.2, 1);
-        const mapMidOP = sk.map(mid, 0, 255, 0.2, 1);
-        const mapTrebleOP = sk.map(treble, 0, 255, 0.2, 1);
+        const mapMidOP = sk.map(mid, 0, 255, 0.8, 1);
+        const mapTrebleOP = sk.map(treble, 0, 255, 0.8, 1);
 
         //circle1
-        sk.fill('#333'); // spectrum is green
+        if (this.is_fill){
+            sk.fill('#333'); // spectrum is green
+        }else{
+            sk.fill(`rgba(0, 0, 0, 0)`);
+        }
+        
         const trebleN = sk.map(treble, 0, 255, 5, 30);
         N = sk.map(bass, 0, 255, 0, mapTreble);
         sk.push();
         sk.translate(sk.width / 2, sk.height / 2);
         sk.rotate(-90);
         sk.stroke('yellow');
+        sk.strokeWeight(mapMid);
         sk.beginShape();
         for (let theta = 0; theta < 360; theta++) {
             let pos = this.calcPos(R, theta, sk);
@@ -47,7 +58,11 @@ export default class effLines {
 
             //line1
             sk.push();
-            sk.fill(`rgba(255, 255, 255, ${mapTrebleOP})`);
+            if (this.is_fill) {
+                sk.fill(`rgba(255, 255, 255, ${mapTrebleOP})`);
+            }else{
+                sk.fill(`rgba(0, 0, 0, 0)`);
+            }
             sk.translate(mapTreble, h);
             sk.rotate(sk.PI / mapTreble);
             sk.stroke('#ccc');
@@ -56,7 +71,12 @@ export default class effLines {
             sk.pop();
 
             //line2
-            sk.fill(`rgba(214, 18, 4, ${mapMidOP})`);
+            if (this.is_fill) {
+                sk.fill(`rgba(214, 18, 4, ${mapMidOP})`);
+            } else {
+                sk.fill(`rgba(0, 0, 0, 0)`);
+            }
+
             sk.translate(mapBass, h);
             sk.translate(h, mapBass);
             sk.rotate(sk.PI / mapMid);

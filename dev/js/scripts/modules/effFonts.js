@@ -48,7 +48,7 @@ export default function effFonts(mh, fft, mct) {
             
             const types = [];
             let textTypes = [
-                ':)1/K','AXIS','BIAS','WOND'
+                ':)1/K','AXIS','BIAS','sINe'
             ];
 
             let font;
@@ -66,7 +66,6 @@ export default function effFonts(mh, fft, mct) {
             }
 
             sk.draw = () => {
-                console.log(mct.is_reset);
                 if (mct.is_reset) {
                     fontSize = 900;
                     fontColor = 0;
@@ -90,16 +89,16 @@ export default function effFonts(mh, fft, mct) {
 
                 let TypeIndex = 0;
                 switch (mh.info.note) {
-                    case 32:
+                    case 33:
                         TypeIndex = 0;
                         break;
-                    case 33:
+                    case 34:
                         TypeIndex = 1;
                         break;
-                    case 34:
+                    case 35:
                         TypeIndex = 2;
                         break;
-                    case 35:
+                    case 36:
                         TypeIndex = 3;
                         break;
                     default:

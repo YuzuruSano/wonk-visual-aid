@@ -3,6 +3,7 @@ let angle = 0;
 export default class effPulse {
     constructor(mh){
         this.mh = mh;
+        this.is_fill = false;
         this.Velocity1 = 1;
         this.Velocity2 = 1;
         this.Velocity3 = 1;
@@ -21,6 +22,12 @@ export default class effPulse {
     }
 
     exec(bass, mid, treble, spectrum, sk, x, y){
+        if (this.mh.info.note == 64 && this.mh.info.velocity > 0) {
+            this.is_fill = true;
+        }else{
+            this.is_fill = false;
+        }
+        
         this.Velocity1 = this.exChangeVelocity(1, this.Velocity1, sk);
         this.Velocity2 = this.exChangeVelocity(2, this.Velocity2, sk);
         this.Velocity3 = this.exChangeVelocity(3, this.Velocity3, sk);
@@ -46,7 +53,14 @@ export default class effPulse {
         }
     
         sk.stroke(`rgba(${mapTrebleB}, ${mapMidG}, ${mapBassR}, ${this.Velocity1})`);
-        sk.fill(`rgba(0, 0 , 0, ${this.Velocity1})`);
+
+        if (this.is_fill){
+            sk.fill(`rgba(0, 0 , 0, ${this.Velocity1})`);
+        } else {
+            sk.fill(`rgba(0, 0, 0, 0)`);
+        }
+
+        
         sk.translate(sk.random(-100, sk.width + sk.width), mapTreble * mapMid);
         sk.beginShape();
         // first controlpoint
@@ -65,8 +79,15 @@ export default class effPulse {
         sk.translate(sk.width / 4, sk.height / 4);
         sk.rotate(sk.radians(angle));
         sk.stroke(`rgba(${mapBassR}, ${mapTrebleB}, ${mapBassR}, ${this.Velocity2})`);
-        sk.fill(`rgba(0, 0 , 0, ${this.Velocity2})`);
-        sk.strokeWeight(sk.noise(1, 2));
+
+        if (this.is_fill) {
+            sk.fill(`rgba(0, 0 , 0, ${this.Velocity2})`);
+        } else {
+            sk.fill(`rgba(0, 0, 0, 0)`);
+        }
+
+        
+        sk.strokeWeight(sk.random(1, 2));
         sk.beginShape();
         // first controlpoint
         sk.curveVertex(x[formResolution - 1] + centerX, y[formResolution - 1] + centerY);
@@ -84,8 +105,14 @@ export default class effPulse {
         sk.translate(sk.width / 4, sk.height / 4);
         sk.rotate(sk.radians(angle) * 180 / sk.PI);
         sk.stroke(`rgba(227, 209, 14, ${this.Velocity3})`);
-        sk.fill(`rgba(0, 0 , 0, ${this.Velocity3})`);
-        sk.strokeWeight(sk.noise(1, 2));
+
+        if (this.is_fill) {
+            sk.fill(`rgba(0, 0 , 0, ${this.Velocity3})`);
+        } else {
+            sk.fill(`rgba(0, 0, 0, 0)`);
+        }
+        
+        sk.strokeWeight(sk.random(1, 2));
         sk.beginShape();
         // first controlpoint
         sk.curveVertex(x[formResolution - 1] + centerX, y[formResolution - 1] + centerY);

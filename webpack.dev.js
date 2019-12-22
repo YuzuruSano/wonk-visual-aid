@@ -99,6 +99,7 @@ module.exports = {
         new CopyWebpackPlugin([
             { from: "./dev/images", to: "images/" },
             { from: './dev/fonts', to: 'fonts/' },
+            { from: './dev/movie', to: 'movie/' },
         ]),
         new webpack.ProvidePlugin({
             $: "jquery",

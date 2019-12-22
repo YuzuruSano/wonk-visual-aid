@@ -7,6 +7,7 @@ import effLines from "modules/effLines";
 import effPulse from "modules/effPulse";
 import effImgCollage from "modules/effImgCollage";
 import effFonts from "modules/effFonts";
+//import effMovie from "modules/effMovie";
 import MidiControllTrait from "modules/MidiControllTrait";
 import 'p5/lib/addons/p5.sound';
 import * as p5 from 'p5';
@@ -61,6 +62,7 @@ if ($('#canvas').length > 0){
 
       centerX = sk.width / 2;
       centerY = sk.height / 2;
+      
       const angle = sk.radians(360 / formResolution);
       for (var i = 0; i < formResolution; i++) {
         x.push(sk.cos(angle * i) * initRadius);
@@ -81,7 +83,7 @@ if ($('#canvas').length > 0){
         }
       }
 
-      sk.background(0);
+      sk.clear();
       let micLevel = mic.getLevel();
       sk.ellipse(sk.width / 2, sk.constrain(sk.height - micLevel * sk.height * 5, 0, sk.height), 10, 10);
 
@@ -127,7 +129,7 @@ if ($('#canvas2').length > 0) {
       const canvas = sk.createCanvas(sk.windowWidth * 1.5, sk.windowHeight);
       canvas.parent(canvasElem);
       sk.userStartAudio();
-      sk.background('#280461');
+      
       centerX = sk.width / 2;
       centerY = sk.height / 2;
       sk.frameRate(10);
@@ -212,7 +214,9 @@ if ($('#canvas2').length > 0) {
  * img collage
  */
 effImgCollage(mh, mct);
-
+/**
+ * fonts
+ */
 effFonts(mh, fft, mct);
 
 if (module.hot) {

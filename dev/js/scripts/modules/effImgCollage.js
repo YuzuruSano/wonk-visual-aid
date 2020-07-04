@@ -1,5 +1,7 @@
 import * as p5 from 'p5';
 
+const staticPath = (process.env.NODE_ENV == 'development') ? '../images/' : '/assets/images/'
+
 export default function effImgCollage(mh){
     if ($('#canvas3').length > 0) {
         let s = (sk) => {
@@ -13,19 +15,19 @@ export default function effImgCollage(mh){
 
             let is_fill = false;
             sk.preload = () => {
-                layer1Images.push(sk.loadImage('../images/collage/layer1_01.png'));
-                layer1Images.push(sk.loadImage('../images/collage/layer1_02.png'));
-                layer1Images.push(sk.loadImage('../images/collage/layer1_03.png'));
-                layer1Images.push(sk.loadImage('../images/collage/layer1_04.png'));
-                layer1Images.push(sk.loadImage('../images/collage/layer1_05.png'));
+                layer1Images.push(sk.loadImage(`${staticPath}collage/layer1_01.png`));
+                layer1Images.push(sk.loadImage(`${staticPath}collage/layer1_02.png`));
+                layer1Images.push(sk.loadImage(`${staticPath}collage/layer1_03.png`));
+                layer1Images.push(sk.loadImage(`${staticPath}collage/layer1_04.png`));
+                layer1Images.push(sk.loadImage(`${staticPath}collage/layer1_05.png`));
 
-                layer2Images.push(sk.loadImage('../images/collage/layer2_01.png'));
-                layer2Images.push(sk.loadImage('../images/collage/layer2_02.png'));
+                layer2Images.push(sk.loadImage(`${staticPath}collage/layer2_01.png`));
+                layer2Images.push(sk.loadImage(`${staticPath}collage/layer2_02.png`));
 
-                layer3Images.push(sk.loadImage('../images/collage/layer3_01.png'));
-                layer3Images.push(sk.loadImage('../images/collage/layer3_02.png'));
-                layer3Images.push(sk.loadImage('../images/collage/layer3_03.png'));
-                layer3Images.push(sk.loadImage('../images/collage/layer3_04.png'));
+                layer3Images.push(sk.loadImage(`${staticPath}collage/layer3_01.png`));
+                layer3Images.push(sk.loadImage(`${staticPath}collage/layer3_02.png`));
+                layer3Images.push(sk.loadImage(`${staticPath}collage/layer3_03.png`));
+                layer3Images.push(sk.loadImage(`${staticPath}collage/layer3_04.png`));
             }
 
             sk.setup = async () => {
@@ -57,8 +59,8 @@ export default function effImgCollage(mh){
                 }
 
                 const velocity = (mh.info.velocity) ? mh.info.velocity : 0.01;
-
                 sk.frameRate(30);
+
                 if (mh.info.note === 22) {
                     const mapVelocity = sk.map(velocity, 0, 127, 1, 4);
                     if (mapVelocity > 1 || 2 >= mapVelocity) layer1Items = generateCollageItems(layer1Images, sk.random(5, 15), sk.width / 2, sk.height / 2, sk.width, sk.height, 0.1, 0.5, 0, 0);

@@ -44,6 +44,7 @@ class Letter {
 
 export default function effFonts(mh, fft, mct) {
     if ($('#canvas4').length > 0) {
+        let globalTypeIndex = 0;
         let s = (sk) => {
             let fontSize = 800;
             let fontColor = 255;
@@ -90,7 +91,7 @@ export default function effFonts(mh, fft, mct) {
                 const pathSampleFactor = 0.03 * sk.pow(0.02, mapMid / sk.width);
                 const ribbonWidth = sk.map(mapTreble, 0, sk.height, 1, treble);
 
-                let TypeIndex = 0;
+                let TypeIndex = globalTypeIndex;
                 switch (mh.info.note) {
                     case 33:
                         TypeIndex = 0;
@@ -107,6 +108,7 @@ export default function effFonts(mh, fft, mct) {
                     default:
                         break;
                 }
+                globalTypeIndex = TypeIndex;
                 for (var i = 0; i < types[TypeIndex].length; i++) {
                     types[TypeIndex][i].draw(pathSampleFactor, ribbonWidth, font, fontSize, fontColor);
                 }

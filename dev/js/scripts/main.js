@@ -70,15 +70,6 @@ if ($('#canvas').length > 0){
 
     sk.draw = () => {
       mct.reset();
-      
-      if (mh.info.note == 53 && mh.info.velocity > 0){
-          drawLine = true;
-          drawPulse = false;
-      }else{
-          drawLine = false;
-          drawPulse = true;
-      }
-
       sk.clear();
       let micLevel = mic.getLevel();
       let spectrum = fft.analyze();
@@ -97,6 +88,14 @@ if ($('#canvas').length > 0){
         sk.stroke(0, 0, 255);
         sk.ellipse(cw, ch, 1000 * micLevel, 1000 * micLevel * sk.random(0.3, 1));
       sk.pop();
+
+      if (mh.info.note == 53 && mh.info.velocity > 0) {
+        drawLine = true;
+        drawPulse = false;
+      } else if (mh.info.note == 53 && mh.info.velocity <= 0) {
+        drawLine = false;
+        drawPulse = true;
+      }
 
       if(drawLine){
         lines.exec(bass, mid, treble, spectrum, sk);

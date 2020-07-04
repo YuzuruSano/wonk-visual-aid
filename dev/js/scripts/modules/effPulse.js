@@ -24,7 +24,7 @@ export default class effPulse {
     exec(bass, mid, treble, spectrum, sk, x, y){
         if (this.mh.info.note == 69 && this.mh.info.velocity > 0) {
             this.is_fill = true;
-        }else{
+        } else if (this.mh.info.note == 69 && this.mh.info.velocity <= 0){
             this.is_fill = false;
         }
         

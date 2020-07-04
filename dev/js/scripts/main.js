@@ -1,6 +1,4 @@
 import Entry from "entry";
-import BrowserDetect from "modules/BrowserDetect";
-import { $wrap, size, animation, wWidth, wheight, aiueo, midiDevices} from "modules/Defines";
 import MidiHandler from "modules/midiHandler";
 import LoadImg from "modules/LoadImg";
 import effLines from "modules/effLines";
@@ -73,24 +71,32 @@ if ($('#canvas').length > 0){
     sk.draw = () => {
       mct.reset();
       
-      if (mh.info.note == 48){
-        if(mh.info.velocity == 127){
+      if (mh.info.note == 53 && mh.info.velocity > 0){
           drawLine = true;
           drawPulse = false;
-        }else{
+      }else{
           drawLine = false;
           drawPulse = true;
-        }
       }
 
       sk.clear();
       let micLevel = mic.getLevel();
-      sk.ellipse(sk.width / 2, sk.constrain(sk.height - micLevel * sk.height * 5, 0, sk.height), 10, 10);
-
       let spectrum = fft.analyze();
       const bass = fft.getEnergy("bass");
       const treble = fft.getEnergy("treble");
       const mid = fft.getEnergy("mid");
+
+      const cw = sk.random(0, sk.width);
+      const ch = sk.random(0, sk.height);
+
+      sk.push();
+        sk.strokeWeight(micLevel * 15);
+        sk.ellipse(cw, ch, 2000 * micLevel, 2000 * micLevel * sk.random(0.3, 1));
+      sk.pop();
+      sk.push();
+        sk.stroke(0, 0, 255);
+        sk.ellipse(cw, ch, 1000 * micLevel, 1000 * micLevel * sk.random(0.3, 1));
+      sk.pop();
 
       if(drawLine){
         lines.exec(bass, mid, treble, spectrum, sk);
@@ -141,11 +147,11 @@ if ($('#canvas2').length > 0) {
       const treble = fft.getEnergy("treble");
       const mid = fft.getEnergy("mid");
       
-      if (mh.info.note == 32 && mh.info.velocity > 0) {
+      if (mh.info.note == 37 && mh.info.velocity > 0) {
         sk.clear();
       }
       
-      if (mh.info.note === 0){
+      if (mh.info.note === 21){
         const velocity = (mh.info.velocity) ? mh.info.velocity : 0.01;
         const mapVelocity = sk.map(velocity, 0, 127, 0.01, 0.6);
         const mapSkewX = sk.map(bass, 0, 255, -5, 5);

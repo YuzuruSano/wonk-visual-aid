@@ -10,7 +10,7 @@ const WebpackConfig = require('./webpack.dev');
 const compiler = webpack(WebpackConfig);
 const getLocalAddress = require('./dev/js/scripts/modules/getLocalAddress');
 const addr = getLocalAddress();
-const ipv4 = addr['ipv4'][0]['address'];
+// const ipv4 = addr['ipv4'][0]['address'];
 const env = app.get('env');
 const red = '\u001b[31m';
 const green = '\u001b[32m'; 
@@ -36,7 +36,7 @@ if (env === 'development'){
 const http = require('http').Server(app);
 
 const server = http.listen(PORT, function () {
-    console.log(`Your site : ${green}${ipv4}:${PORT}`);
+    //console.log(`Your site : ${green}${ipv4}:${PORT}`);
 });
 
 /**

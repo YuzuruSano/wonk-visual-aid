@@ -45,9 +45,9 @@ export default function effImgCollage(mh){
             }
 
             sk.draw = () => {
-                if (mh.info.note == 49 && mh.info.velocity == 127) {
+                if (mh.info.note == 70 && mh.info.velocity == 127) {
                     is_fill = true;
-                } else if(mh.info.note == 49 && mh.info.velocity == 0) {
+                } else if(mh.info.note == 70 && mh.info.velocity == 0) {
                     is_fill = false;
                 }
                 
@@ -59,7 +59,7 @@ export default function effImgCollage(mh){
                 const velocity = (mh.info.velocity) ? mh.info.velocity : 0.01;
 
                 sk.frameRate(30);
-                if (mh.info.note === 7) {
+                if (mh.info.note === 22) {
                     const mapVelocity = sk.map(velocity, 0, 127, 1, 4);
                     if (mapVelocity > 1 || 2 >= mapVelocity) layer1Items = generateCollageItems(layer1Images, sk.random(5, 15), sk.width / 2, sk.height / 2, sk.width, sk.height, 0.1, 0.5, 0, 0);
                     if (mapVelocity > 2 || 3 >= mapVelocity) layer2Items = generateCollageItems(layer2Images, sk.random(5, 8), sk.width / 6, sk.height / 6, sk.width, sk.height, 0.1, sk.random(0.3, 0.8), -sk.HALF_PI, sk.HALF_PI);

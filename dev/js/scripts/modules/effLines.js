@@ -8,7 +8,7 @@ export default class effLines {
     }
 
     exec(bass, mid, treble, spectrum, sk){
-        if (this.mh.info.note == 64 && this.mh.info.velocity > 0) {
+        if (this.mh.info.note == 69 && this.mh.info.velocity > 0) {
             this.is_fill = true;
         } else {
             this.is_fill = false;

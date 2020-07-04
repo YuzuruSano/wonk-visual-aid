@@ -3,9 +3,10 @@ export default class LoadImg{
      * 画像ロード完了時にpromiseを返却する
      * async/awaitでwrapして利用する
      * 
-     * @param object p5 skech
-     * @param string imgPath
-     * @param String parent element
+     * @param {Object} p5 skech
+     * @param {String} imgPath
+     * @param {String} parent element
+     * @return {Object} promise
      */
     create(p5, imgPath, parent = 'wrap'){
         return new Promise((resolve, reject) => {
@@ -19,9 +20,10 @@ export default class LoadImg{
      * 画像ロード完了時にpromiseを返却する
      * async/awaitでwrapして利用する
      * 
-     * @param object p5 skech
-     * @param string imgPath
-     * @param String parent element
+     * @param {Object} p5 skech
+     * @param {String} imgPath
+     * @param {String} parent element
+     * @return {Object} promise
      */
     load(p5, imgPath, parent = 'wrap') {
         return new Promise((resolve, reject) => {

@@ -9,7 +9,7 @@ const cssnano = require('cssnano');
 const postcssAssets = require('postcss-assets');
 const getLocalAddress = require('./dev/js/scripts/modules/getLocalAddress');
 const addr = getLocalAddress();
-const ipv4 = addr['ipv4'][0]['address'];
+//const ipv4 = addr['ipv4'][0]['address'];
 
 module.exports = {
     entry: {

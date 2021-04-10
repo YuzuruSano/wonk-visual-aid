@@ -1,3 +1,5 @@
+import config from 'modules/config';
+
 let N = 5;
 let R = 180;
 
@@ -8,9 +10,9 @@ export default class effLines {
     }
 
     exec(bass, mid, treble, spectrum, sk){
-        if (this.mh.info.note == 69 && this.mh.info.velocity > 0) {
+        if (this.mh.info.note == config.fill_pulse_black && this.mh.info.velocity > 0) {
             this.is_fill = true;
-        } else if (this.mh.info.note == 69 && this.mh.info.velocity <= 0) {
+        } else if (this.mh.info.note == config.fill_pulse_black && this.mh.info.velocity <= 0) {
             this.is_fill = false;
         }
 

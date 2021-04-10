@@ -1,3 +1,4 @@
+import config from 'modules/config';
 import Entry from "entry";
 import MidiHandler from "modules/midiHandler";
 import LoadImg from "modules/LoadImg";
@@ -9,6 +10,7 @@ import effFonts from "modules/effFonts";
 import MidiControllTrait from "modules/MidiControllTrait";
 import 'p5/lib/addons/p5.sound';
 import * as p5 from 'p5';
+
 
 /**
  * 画像ロード
@@ -88,14 +90,20 @@ if ($('#canvas').length > 0){
         sk.stroke(0, 0, 255);
         sk.ellipse(cw, ch, 1000 * micLevel, 1000 * micLevel * sk.random(0.3, 1));
       sk.pop();
-
-      if (mh.info.note == 53 && mh.info.velocity > 0) {
+      
+      if (mh.info.note == config.hide_pulse_or_line){
+        return;
+      } 
+    
+      if (mh.info.note == config.pulse_or_line && mh.info.velocity > 0) {
         drawLine = true;
         drawPulse = false;
-      } else if (mh.info.note == 53 && mh.info.velocity <= 0) {
+      } else if (mh.info.note == config.pulse_or_line && mh.info.velocity <= 0) {
         drawLine = false;
         drawPulse = true;
       }
+    
+      
 
       if(drawLine){
         lines.exec(bass, mid, treble, spectrum, sk);
@@ -125,8 +133,8 @@ if ($('#canvas2').length > 0) {
     let NORTHWEST = 7;
     let direction;
 
-    let stepSize = 10;
-    let diameter = 10;
+    let stepSize = 8;
+    let diameter = 5;
 
     let prevVelocity = 0.01;
 
@@ -146,11 +154,12 @@ if ($('#canvas2').length > 0) {
       const treble = fft.getEnergy("treble");
       const mid = fft.getEnergy("mid");
       
-      if (mh.info.note == 37 && mh.info.velocity > 0) {
+      if (mh.info.note == config.map_reset && mh.info.velocity > 0) {
         sk.clear();
-      }
+      } 
       
-      if (mh.info.note === 21){
+      
+      if (mh.info.note === config.map_threshold){
         const velocity = (mh.info.velocity) ? mh.info.velocity : 0.01;
         const mapVelocity = sk.map(velocity, 0, 127, 0.01, 0.6);
         const mapSkewX = sk.map(bass, 0, 255, -5, 5);

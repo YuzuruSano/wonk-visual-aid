@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { config, get_global_fps} from 'modules/config';
 
 const staticPath = (process.env.NODE_ENV == 'development') ? '../images/' : '/assets/images/'
 
@@ -35,8 +36,6 @@ export default function effImgCollage(mh){
                 canvas.parent('canvas3');
                 sk.imageMode(sk.CENTER);
 
-                sk.frameRate(30);
-
                 layer1Items = generateCollageItems(layer1Images, 100, sk.width / 2, sk.height / 2, sk.width, sk.height, 0.1, 0.5, 0, 0);
                 layer2Items = generateCollageItems(layer2Images, 150, sk.width / 2, sk.height / 2, sk.width, sk.height, 0.1, 0.3, -sk.HALF_PI, sk.HALF_PI);
                 layer3Items = generateCollageItems(layer3Images, 110, sk.width / 2, sk.height / 2, sk.width, sk.height, 0.1, 0.4, -sk.HALF_PI, sk.HALF_PI);
@@ -59,10 +58,11 @@ export default function effImgCollage(mh){
                 }
 
                 const velocity = (mh.info.velocity) ? mh.info.velocity : 0.01;
-                sk.frameRate(30);
+                
+                sk.frameRate(get_global_fps(sk, mh));
 
                 if (mh.info.note === 22) {
-                    const mapVelocity = sk.map(velocity, 0, 127, 1, 4);
+                    const mapVelocity = sk.map(velocity, 1, 127, 1, 4);
                     if (mapVelocity > 1 || 2 >= mapVelocity) layer1Items = generateCollageItems(layer1Images, sk.random(5, 15), sk.width / 2, sk.height / 2, sk.width, sk.height, 0.1, 0.5, 0, 0);
                     if (mapVelocity > 2 || 3 >= mapVelocity) layer2Items = generateCollageItems(layer2Images, sk.random(5, 8), sk.width / 6, sk.height / 6, sk.width, sk.height, 0.1, sk.random(0.3, 0.8), -sk.HALF_PI, sk.HALF_PI);
                     if (3 <= mapVelocity) layer3Items = generateCollageItems(layer3Images, sk.random(10, 60), sk.width / 2, sk.height / 2, sk.width / 2, sk.height / 2, 0.1, sk.random(0.2, 0.6), -sk.HALF_PI, sk.HALF_PI);

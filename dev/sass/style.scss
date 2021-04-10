@@ -2,18 +2,13 @@
 /* base
 ----------------------- */
 @import "base/setting.scss";
-@import "helper/mixin.scss";
 @import "base/reset.scss";
 @import "fonts/font.scss";
-/* layout
------------------------ */
-@import "layout/*";
+
 /* component
 ----------------------- */
 @import "component/*";
-/* page
------------------------ */
-@import "page/*";
+
 body {
     background-color: #000;
 }
@@ -98,12 +93,23 @@ iframe {
 }
 
 body.reset {
-    background-color: #ccc;
+
     canvas,video {
         display: none;
     }
     #canvas4 canvas,
     #canvas3 canvas {
         display: block;
+    }
+    &-white {
+        background-color: #ccc;
+    }
+
+    &-red {
+        background-color: red;
+    }
+
+    &-yellow {
+        background-color: rgb(255, 179, 0)
     }
 }

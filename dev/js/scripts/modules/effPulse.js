@@ -1,3 +1,4 @@
+import config from 'modules/config';
 let angle = 0;
 
 export default class effPulse {
@@ -22,9 +23,9 @@ export default class effPulse {
     }
 
     exec(bass, mid, treble, spectrum, sk, x, y){
-        if (this.mh.info.note == 69 && this.mh.info.velocity > 0) {
+        if (this.mh.info.note == config.fill_pulse_black && this.mh.info.velocity > 0) {
             this.is_fill = true;
-        } else if (this.mh.info.note == 69 && this.mh.info.velocity <= 0){
+        } else if (this.mh.info.note == config.fill_pulse_black && this.mh.info.velocity <= 0){
             this.is_fill = false;
         }
         

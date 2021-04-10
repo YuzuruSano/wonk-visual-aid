@@ -1,11 +1,8 @@
+import config from 'modules/config';
+
 /**
  * 各種canvasで共通して差し込みたいエフェクト
  */
-
-
-const conf = {
-    reset:39
-}
 
 export default class MidiControllTrait {
     /**
@@ -25,15 +22,42 @@ export default class MidiControllTrait {
     reset(){
         const body = document.body;
         const mh = this.mh;
-
-        if (mh.info.note == conf.reset && mh.info.velocity > 64) {
-            body.classList.add("reset");
-            this.is_reset = true;
-        } else if (mh.info.note == conf.reset && mh.info.velocity < 127) {
-            body.classList.remove("reset");
-            this.is_reset = false;
+        const v = mh.info.velocity;
+        
+        switch (mh.info.note) {
+            case config.reset_white:
+                if (v > 64) {
+                    body.classList.add("reset-white");
+                    this.is_reset = true;
+                } else if (v < 127) {
+                    body.classList.remove("reset-white");
+                    this.is_reset = false;
+                }
+                break;
+            case config.reset_red:
+                if (v > 64) {
+                    body.classList.add("reset-red");
+                    this.is_reset = true;
+                } else if (v < 127) {
+                    body.classList.remove("reset-red");
+                    this.is_reset = false;
+                }
+                break;
+            case config.reset_yellow:
+                if (v > 64) {
+                    body.classList.add("reset-yellow");
+                    this.is_reset = true;
+                } else if (v < 127) {
+                    body.classList.remove("reset-yellow");
+                    this.is_reset = false;
+                }
+                break;
+            default:
+                break;
         }
+        
 
+        
         return this.is_reset;
     }
 }

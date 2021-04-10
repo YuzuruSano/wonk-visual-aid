@@ -36,7 +36,7 @@ if (env === 'development'){
 const http = require('http').Server(app);
 
 const server = http.listen(PORT, function () {
-    //console.log(`Your site : ${green}${ipv4}:${PORT}`);
+    // console.log(`Your site : ${green}:${PORT}`);
 });
 
 /**

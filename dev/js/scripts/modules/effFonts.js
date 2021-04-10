@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import config from 'modules/config';
 const staticPath = (process.env.NODE_ENV == 'development') ? '../' : '/assets/'
 
 class Letter {
@@ -44,17 +45,12 @@ class Letter {
 
 export default function effFonts(mh, fft, mct) {
     if ($('#canvas4').length > 0) {
-        let globalTypeIndex = 0;
         let s = (sk) => {
             let fontSize = 800;
             let fontColor = 255;
-            let pathSimplification = 0;
             
             const types = [];
-            let textTypes = [
-                'nori','san','ome','deto'
-            ];
-
+            let globalIndex = 0;
             let font;
 
             sk.preload = () => {
@@ -91,48 +87,38 @@ export default function effFonts(mh, fft, mct) {
                 const pathSampleFactor = 0.03 * sk.pow(0.02, mapMid / sk.width);
                 const ribbonWidth = sk.map(mapTreble, 0, sk.height, 1, treble);
 
-                let TypeIndex = globalTypeIndex;
-                switch (mh.info.note) {
-                    case 33:
-                        TypeIndex = 0;
-                        break;
-                    case 34:
-                        TypeIndex = 1;
-                        break;
-                    case 35:
-                        TypeIndex = 2;
-                        break;
-                    case 36:
-                        TypeIndex = 3;
-                        break;
-                    default:
-                        break;
+                if (mh.info.note && types[mh.info.note]){
+                    globalIndex = mh.info.note;
                 }
-                globalTypeIndex = TypeIndex;
-                for (var i = 0; i < types[TypeIndex].length; i++) {
-                    types[TypeIndex][i].draw(pathSampleFactor, ribbonWidth, font, fontSize, fontColor);
+
+                if (globalIndex > 0){
+                    for (var i = 0; i < types[globalIndex].length; i++) {
+                        types[globalIndex][i].draw(pathSampleFactor, ribbonWidth, font, fontSize, fontColor);
+                    }
                 }
+                
+                
             }
 
             const createLetters = () => {
-                for (let index = 0; index < textTypes.length; index++) {
-                    const chars = textTypes[index];
-                    //let x = -sk.width * 0.1;
+                Object.keys(config.textTypes).forEach(function (key) {
+                    const chars = config.textTypes[key];
                     let x = -100;
                     let letters = [];
-                    
+
                     for (let i = 0; i < chars.length; i++) {
                         if (i > 0) {
                             const charsBefore = chars.substring(0, i);
                             x = font.textBounds(charsBefore, 0, 0, fontSize).w;
                         }
-                        
+
                         const newLetter = new Letter(chars[i], x - 50, sk.random(-100, 100), sk);
                         letters.push(newLetter);
                     }
 
-                    types.push(letters);
-                }
+                    types[key] = letters;
+                });
+                
             }
         }
 

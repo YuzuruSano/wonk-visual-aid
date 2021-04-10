@@ -52,7 +52,7 @@ export default function effFonts(mh, fft, mct) {
             
             const types = [];
             let textTypes = [
-                ':)1/K','AXIS','BIAS','sINe'
+                'nori','san','ome','deto'
             ];
 
             let font;

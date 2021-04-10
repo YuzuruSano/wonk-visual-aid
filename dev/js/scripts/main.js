@@ -224,6 +224,7 @@ effImgCollage(mh, mct);
  */
 effFonts(mh, fft, mct);
 
+$('#canvas5').addClass('on');
 if (module.hot) {
   module.hot.accept();
 }

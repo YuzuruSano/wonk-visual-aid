@@ -33,13 +33,17 @@ export default class MidiHandler {
     async requestSuccess(data){
         // Inputデバイスの配列を作成
         let inputIterator = data.inputs.values();
+
         let i = 0;
         for (let input = inputIterator.next(); !input.done; input = inputIterator.next()) {
             let value = input.value;
-            // デバイス情報を保存
-            this.midiDevices.inputs[i] = value;
-            // イベント登録
-            value.addEventListener('midimessage', e => this.inputEvent(e));
+            if(value.manufacturer === 'KORG INC.'){
+                // デバイス情報を保存
+                this.midiDevices.inputs[i] = value;
+                // イベント登録
+                value.addEventListener('midimessage', e => this.inputEvent(e));
+            };
+            
             i++;
         }
 

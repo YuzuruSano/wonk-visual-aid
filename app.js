@@ -25,8 +25,7 @@ app.set('view engine', 'pug');
  */
 if (env === 'development'){
     app.use(webpackDevMiddleware(compiler, {
-        publicPath: WebpackConfig.output.publicPath,
-        hot: true
+        publicPath: WebpackConfig.output.publicPath
     }));
     app.use(webpackHotMiddleware(compiler));
 }else{

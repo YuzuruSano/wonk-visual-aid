@@ -59,7 +59,7 @@ export default function effImgCollage(mh){
 
                 const velocity = (mh.info.velocity) ? mh.info.velocity : 0.01;
                 
-                sk.frameRate(get_global_fps(sk, mh));
+                //sk.frameRate(get_global_fps(sk, mh));
 
                 if (mh.info.note === 22) {
                     const mapVelocity = sk.map(velocity, 1, 127, 1, 4);

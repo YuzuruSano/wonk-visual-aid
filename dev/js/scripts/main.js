@@ -32,6 +32,9 @@ let mh;
   }
 })();
 
+/**
+ * マイク入力とフーリエ変換
+ */
 let mic;
 let fft;
 
@@ -40,7 +43,13 @@ mic.start();
 fft = new p5.FFT();
 fft.setInput(mic);
 
+/**
+ * line
+ */
 const lines = new effLines(mh);
+/**
+ * pulse
+ */
 const pulse = new effPulse(mh);
 let drawLine = false;
 let drawPulse = false;
@@ -102,8 +111,6 @@ if ($('#canvas').length > 0){
         drawLine = false;
         drawPulse = true;
       }
-    
-      
 
       if(drawLine){
         lines.exec(bass, mid, treble, spectrum, sk);
@@ -233,7 +240,13 @@ effImgCollage(mh, mct);
  */
 effFonts(mh, fft, mct);
 
+
 $('#canvas5').addClass('on');
+if (import.meta.webpackHot){
+  import.meta.webpackHot.dispose((data) => {
+    window.location.reload();
+  });
+}
 if (module.hot) {
-  module.hot.accept();
+  module.hot.accept()
 }

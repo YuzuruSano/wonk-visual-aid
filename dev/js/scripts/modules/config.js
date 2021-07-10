@@ -10,7 +10,8 @@ const config = {
        39: ':)1/K',55: 'AXIS', 71: 'BIAS'
     },
     map_threshold : 18,
-    map_reset: 34
+    map_reset: 34,
+    scrib_threshold : 16
 }
 
 export const get_global_fps = (sk, mh) => {

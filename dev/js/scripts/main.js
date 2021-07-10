@@ -9,6 +9,7 @@ import effFonts from "modules/effFonts";
 //import effMovie from "modules/effMovie";
 import MidiControllTrait from "modules/MidiControllTrait";
 import 'p5/lib/addons/p5.sound';
+import Scribble from "addons/p5.scribble";
 import * as p5 from 'p5';
 
 
@@ -152,7 +153,6 @@ if ($('#canvas2').length > 0) {
       
       centerX = sk.width / 2;
       centerY = sk.height / 2;
-      sk.frameRate(10);
       document.getElementById(canvasElem).style.opacity = prevVelocity;
     }
 
@@ -231,6 +231,97 @@ if ($('#canvas2').length > 0) {
   const P5_2 = new p5(ss);
 }
 
+if ($('#canvas5').length > 0) {
+  
+
+  let ss = (sk) => {
+    const canvasElem = 'canvas5';
+    let centerX;
+    let centerY;
+    
+    const ww = sk.windowWidth;
+    const wh = sk.windowWidth;
+
+    const scribble = new Scribble(sk);
+
+    sk.setup = async () => {
+      const canvas = sk.createCanvas(ww * 1.5, wh);
+      canvas.parent(canvasElem);
+      sk.userStartAudio();
+
+      centerX = sk.width / 2;
+      centerY = sk.height / 2;
+    }
+
+    sk.draw = () => {
+      let threshold = 3
+      
+      if (mh.info.note == config.scrib_threshold) {
+        const velocity = (mh.info.velocity) ? mh.info.velocity : 3;
+        threshold = Math.floor(sk.map(velocity, 0, 127, 3, 60));
+      }
+
+      const bass = fft.getEnergy("bass");
+      const treble = fft.getEnergy("treble");
+      const mid = fft.getEnergy("mid");
+
+      const color = [
+        sk.map(treble, 0, 255, 30, 150), 
+        sk.random(10, mid), 
+        sk.random(30, bass)
+      ]
+
+      if (sk.frameCount % 40 === 0) {
+        sk.clear();
+      }
+      
+      sk.push();
+        sk.strokeWeight(.02 * treble);
+        if (sk.frameCount % threshold === 0){
+          for (let index = 0; index < 10; index++) {
+            const direction = index % 2 === 0 ? 1 : -1,
+              x1 = sk.random(0, ww) * direction,
+              y1 = sk.random(0, wh),
+              x2 = sk.random(ww / 2),
+              y2 = sk.random(0, wh);
+            
+            scribble.scribbleRect(x1, y1, x2, y2);
+            sk.push();
+              const randB = Math.floor(sk.random(7, 100));
+            
+              if (randB % 7 === 0) scribble.scribbleFilling([x1 + 8, x2, x2, x1 + 8], [y1 + 8, y2, y1 + 8, y2], 5, randB);
+              if (randB % 6 === 0) {
+                sk.fill(color[2], color[0], color[0]);
+                sk.rect(x1 + 8, y1 + 8, x2, y2);
+              }
+              
+              scribble.scribbleRect(x1 + 8, y1 + 8, x2, y2);
+            sk.pop();
+          }
+        }
+      sk.pop();
+    
+      sk.stroke(color[0], color[1], color[2]);
+      sk.strokeWeight(.02 * (treble + mid));
+      sk.noFill();
+      if (sk.frameCount % threshold + 6 === 0) {
+        for (let index = 0; index < 10; index++) {
+          const direction = index % 2 === 0 ? 1 : -1,
+            x1 = sk.random(0, ww / 3) * treble * direction,
+            y1 = sk.random(0, wh / 3),
+            x2 = sk.random(ww / 2),
+            y2 = sk.random(0, wh);
+          sk.rotate(mid);
+          scribble.scribbleCurve(x1, y1, x2, y2, treble, mid, mid,bass);
+        }
+      }
+    }
+  }
+  
+
+  const P5_2_5 = new p5(ss);
+}
+
 /**
  * img collage
  */
@@ -242,6 +333,7 @@ effFonts(mh, fft, mct);
 
 
 $('#canvas5').addClass('on');
+
 if (import.meta.webpackHot){
   import.meta.webpackHot.dispose((data) => {
     window.location.reload();

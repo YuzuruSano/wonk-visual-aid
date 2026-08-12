@@ -3,8 +3,17 @@
   "archetype": "廃墟",
   "palette": { "primary": "#7fc06a", "secondary": "#0d1a10", "glow": "#c8f0a8" },
   "scale": 4,
-  "height": 4,
+  "height": 3,
   "landmarks": ["崩れた集合住宅", "割れ目の芽", "忘却の水路"],
+  "buildings": [
+    { "form": "block", "u": 0.34, "v": 0.4, "w": 1.5, "d": 1.5, "h": 3, "label": "崩れた集合住宅" },
+    { "form": "cluster", "u": 0.72, "v": 0.46, "w": 1.6, "d": 1.6, "h": 2.5 },
+    { "form": "slab", "u": 0.5, "v": 0.64, "w": 1.6, "d": 1.2, "h": 2 }
+  ],
+  "features": [
+    { "type": "river", "path": [[0, 0.2], [0.4, 0.46], [0.75, 0.36], [1, 0.56]] },
+    { "type": "grove", "u": 0.62, "v": 0.82, "count": 6 }
+  ],
   "roads": [
     { "to": "002-neon-no-yoru", "weight": 0.6 },
     { "to": "004-shinshoku-suru-shizukesa", "weight": 0.4 }

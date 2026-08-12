@@ -76,6 +76,7 @@ const cityData = {
     slug: d.slug, title: d.title, date: d.date, tags: d.tags,
     archetype: d.archetype, palette: d.palette, landmarks: d.landmarks,
     height: d.height || 4, size: d.size, x: d.x, y: d.y,
+    buildings: d.buildings || [], features: d.features || [],
     href: d.href, summary: d.aiSummary || '', generatedBy: d.generatedBy,
   })),
   roads,

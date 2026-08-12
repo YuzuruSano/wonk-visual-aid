@@ -26,13 +26,26 @@ export const CONTENT_DIR = path.join(__dirname, 'content');
 
 // Archetypes of the city. Keyword hints steer the procedural fallback; the AI
 // is free to choose any of these based on a deeper read.
+// `forms` = preferred building shapes for this archetype (see FORMS registry in
+// templates/map.js). Grow the vocabulary by adding forms there + here + GENERATE.md.
 export const ARCHETYPES = {
-  電脳街:   { hints: ['code', 'ai', 'data', 'net', 'system', 'デジタル', 'プログラム', '開発', 'api', 'tech'], hue: 168 },
-  歓楽街:   { hints: ['music', 'live', 'party', 'art', '音楽', '祭', 'game', 'アート', '映画', '遊'], hue: 316 },
-  工業区:   { hints: ['build', 'work', 'machine', '製作', '工場', 'diy', 'make', 'hardware', '機械'], hue: 28 },
-  居住区:   { hints: ['life', 'daily', 'diary', '日記', '暮らし', '日常', '食', 'travel', '旅'], hue: 210 },
-  聖域:     { hints: ['think', 'idea', 'philosophy', '思考', '哲学', '祈', '静', 'poem', '詩'], hue: 268 },
-  廃墟:     { hints: ['old', 'ruin', 'memory', '記憶', '廃', '過去', 'log', 'archive'], hue: 96 },
+  電脳街:   { hints: ['code', 'ai', 'data', 'net', 'system', 'デジタル', 'プログラム', '開発', 'api', 'tech'], hue: 168, forms: ['tower', 'spire', 'block'] },
+  歓楽街:   { hints: ['music', 'live', 'party', 'art', '音楽', '祭', 'game', 'アート', '映画', '遊', 'night', '夜'], hue: 316, forms: ['tower', 'dome', 'cluster'] },
+  工業区:   { hints: ['build', 'work', 'machine', '製作', '工場', 'diy', 'make', 'hardware', '機械'], hue: 28, forms: ['slab', 'block', 'tower'] },
+  居住区:   { hints: ['life', 'daily', 'diary', '日記', '暮らし', '日常', '食', 'travel', '旅'], hue: 210, forms: ['block', 'cluster', 'slab'] },
+  聖域:     { hints: ['think', 'idea', 'philosophy', '思考', '哲学', '祈', '静', 'poem', '詩'], hue: 268, forms: ['spire', 'gate', 'terrace'] },
+  廃墟:     { hints: ['old', 'ruin', 'memory', '記憶', '廃', '過去', 'log', 'archive'], hue: 96, forms: ['block', 'cluster', 'slab'] },
+};
+
+// Feature vocabulary (landscape / infrastructure). Keyword -> feature type.
+// Mirrors the FEATURES registry in templates/map.js.
+export const FEATURE_HINTS = {
+  river:  ['川', '河', '水', 'river', '流', '水路'],
+  stairs: ['階段', '段', '坂', 'stair', 'step', '昇', '降'],
+  bridge: ['橋', 'bridge', '渡'],
+  plaza:  ['広場', 'plaza', '広間', 'square', '集'],
+  grove:  ['緑', '森', '木', '植', '芽', 'green', 'tree', '草'],
+  wall:   ['壁', '塀', 'wall', '囲', '境'],
 };
 
 // Cheap deterministic hash -> used for stable pseudo-random choices.
@@ -113,6 +126,34 @@ export function proceduralDistrict(article, allArticles) {
     roads.sort((a, b) => b.weight - a.weight);
   }
 
+  // Buildings: 2-4 forms drawn from the archetype's preferred vocabulary,
+  // laid out on a small grid inside the footprint. Variety scales with length.
+  const forms = ARCHETYPES[archetype]?.forms || ['tower', 'block'];
+  const n = Math.max(2, Math.min(4, Math.round(words / 120) + 2));
+  const buildings = [];
+  const cols = Math.ceil(Math.sqrt(n));
+  for (let i = 0; i < n; i++) {
+    const col = i % cols, row = Math.floor(i / cols);
+    const u = (col + 0.5) / cols, v = (row + 0.5) / Math.ceil(n / cols);
+    const form = forms[(seed + i) % forms.length];
+    const bh = Math.max(2, Math.round((height * (0.5 + ((seed >> (i + 1)) & 3) / 3))));
+    buildings.push({
+      form, u: +u.toFixed(2), v: +v.toFixed(2),
+      w: form === 'gate' || form === 'terrace' ? 1.8 : 1.3,
+      d: 1.3, h: bh,
+      label: landmarks[i] || undefined,
+    });
+  }
+
+  // Features: whatever the text hints at, plus one archetype-default flourish.
+  const features = [];
+  const low = `${data.title || ''} ${text}`.toLowerCase();
+  for (const [type, hints] of Object.entries(FEATURE_HINTS)) {
+    if (hints.some((h) => low.includes(h.toLowerCase()))) features.push(makeFeature(type, seed));
+  }
+  const dflt = { 廃墟: 'grove', 聖域: 'stairs', 歓楽街: 'plaza', 工業区: 'wall', 居住区: 'grove', 電脳街: 'canal' }[archetype];
+  if (dflt && !features.find((f) => f.type === dflt)) features.push(makeFeature(dflt, seed + 7));
+
   return {
     slug,
     archetype,
@@ -120,10 +161,33 @@ export function proceduralDistrict(article, allArticles) {
     scale,
     height,
     landmarks,
+    buildings,
+    features: features.slice(0, 3),
     roads: roads.slice(0, 3),
     aiSummary: data.summary || text.slice(0, 90),
     generatedBy: 'procedural',
   };
+}
+
+// Build a plausible geometry for a feature type (edge-hugging paths etc.).
+function makeFeature(type, seed) {
+  const j = (n) => +(0.15 + ((seed >> n) & 7) / 10).toFixed(2);
+  switch (type) {
+    case 'river':
+    case 'canal':
+      return { type, path: [[0, j(0)], [0.4, 0.5], [0.7, j(3)], [1, 0.6]] };
+    case 'stairs':
+      return { type, path: [[0.2, 0.8], [0.8, 0.3]], steps: 6, rise: 3 };
+    case 'bridge':
+      return { type, path: [[0.1, 0.5], [0.9, 0.5]], h: 1.6 };
+    case 'plaza':
+      return { type, path: [[0.3, 0.3], [0.7, 0.3], [0.7, 0.7], [0.3, 0.7]] };
+    case 'wall':
+      return { type, path: [[0.05, 0.1], [0.95, 0.1]], h: 1 };
+    case 'grove':
+    default:
+      return { type: 'grove', u: j(1), v: j(4), count: 5 };
+  }
 }
 
 /** Build the prompt a human hands to Claude to generate a rich descriptor. */
@@ -146,16 +210,36 @@ ${article.text.slice(0, 1800)}
   "slug": "${article.slug}",
   "archetype": "電脳街|歓楽街|工業区|居住区|聖域|廃墟 のいずれか",
   "palette": { "primary": "#RRGGBB", "secondary": "#RRGGBB(暗い地の色)", "glow": "#RRGGBB(発光色)" },
-  "scale": 2-6 の整数(記事の重量感),
-  "height": 2-9 の整数(タワーの高さ=情報密度),
+  "scale": 2-6 の整数(区画の広さ),
+  "height": 2-9 の整数(主要な高さ=情報密度),
   "landmarks": ["この区画の象徴となる建造物名を2-4個(日本語)"],
+  "buildings": [
+    // 区画内に建てる建物。本文の内容から2-5棟、形状に変化を付ける。
+    // form: tower(塔) slab(横長棟) block(塊) spire(尖塔) terrace(段丘) dome(円蓋) gate(門) cluster(群)
+    // u,v: 区画内の位置(0-1)。w,d: 大きさ(cell,省略可)。h: 高さ(2-9)。label: landmarksと対応(任意)
+    { "form": "tower", "u": 0.3, "v": 0.4, "w": 1.4, "d": 1.4, "h": 6, "label": "宣言の塔" }
+  ],
+  "features": [
+    // 地形/インフラ。本文の情景から選ぶ(無理に全部入れない)。path/u,vは区画内の相対座標(0-1)。
+    // river(川)/canal(水路): {"type":"river","path":[[u,v],...]}
+    // stairs(階段): {"type":"stairs","path":[[u,v],[u,v]],"steps":6,"rise":3}
+    // bridge(橋): {"type":"bridge","path":[[u,v],[u,v]],"h":1.6}
+    // plaza(広場): {"type":"plaza","path":[[u,v],[u,v],[u,v],[u,v]]}  ← 多角形
+    // wall(壁): {"type":"wall","path":[[u,v],...],"h":1}
+    // grove(緑/木立): {"type":"grove","u":0.7,"v":0.6,"count":5}
+  ],
   "roads": [{ "to": "関連する既存記事のslug", "weight": 0.0-1.0 }],
   "aiSummary": "マップ上に表示する40字程度の詩的な一文",
   "generatedBy": "claude"
 }
 
 既存のslug一覧(roadsの接続先候補): ${listSlugs().filter((s) => s !== article.slug).join(', ') || '(まだ無い)'}
-画像の色を尊重し、archetypeは本文の主題から選ぶこと。JSON以外は何も出力しないこと。`;
+
+指針:
+- 画像の色を尊重し、archetypeは本文の主題から選ぶ。
+- buildings は本文の要素を建物に翻訳する（例: 複数の話題→複数棟、対比→塔と段丘）。形状に必ず変化を付ける。
+- features は本文に出てくる情景だけを選ぶ（川・階段・橋・広場・緑・壁）。景色に無ければ空配列でよい。
+- JSON以外は何も出力しないこと。`;
 }
 
 // ---- CLI ----

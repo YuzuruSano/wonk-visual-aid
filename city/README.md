@@ -38,17 +38,30 @@ docs/               ← ビルド出力（静的ホスティングにそのま�
   "slug": "003-kikai-jikake",
   "archetype": "電脳街|歓楽街|工業区|居住区|聖域|廃墟",
   "palette": { "primary": "#RRGGBB", "secondary": "#RRGGBB", "glow": "#RRGGBB" },
-  "scale": 4,                 // 2-6: 塔のフットプリント
-  "height": 6,                // 2-9: 塔の高さ = 情報密度
+  "scale": 4,                 // 2-6: 区画の広さ
+  "height": 7,                // 2-9: 主要な高さ = 情報密度
   "landmarks": ["生成工場", "部品倉庫"],
+  "buildings": [              // 区画内に建つ複数の建物（文章からバリエーション）
+    { "form": "slab",  "u": 0.34, "v": 0.34, "h": 3.5, "label": "生成工場" },
+    { "form": "spire", "u": 0.5,  "v": 0.64, "h": 7,   "label": "ビルドの煙突" }
+  ],
+  "features": [               // 川・階段・橋・広場・壁・緑 などの地形/インフラ
+    { "type": "canal", "path": [[0, 0.82], [0.5, 0.76], [1, 0.86]] }
+  ],
   "roads": [{ "to": "001-hajimari-no-toshi", "weight": 0.8 }],
   "aiSummary": "マップに出る詩的な一文",
   "generatedBy": "claude"
 }
 ```
 
+- **buildings** … `form` は `tower/slab/block/spire/terrace/dome/gate/cluster`。
+  文章の要素を建物に翻訳し、形状に変化を付ける。
+- **features** … `river/canal/stairs/bridge/plaza/wall/grove`。本文の情景に応じて。
+- 種類は増やせる（レジストリ方式）。手順は [`GENERATE.md`](./GENERATE.md) 参照。
+
 `build.mjs` は各記事の `district.json` を読む。**無ければ本文だけから手続き的に
-生成**するので、AIを通さなくても都市は必ず建つ。
+生成**（建物・地形も自動で付く）するので、AIを通さなくても都市は必ず建つ。
+`buildings` が無い古い記述子は、従来どおり単一の塔にフォールバックする。
 
 ---
 

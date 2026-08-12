@@ -5,6 +5,15 @@
   "scale": 4,
   "height": 5,
   "landmarks": ["白線通り", "冷光ネオン塔", "深夜の横断歩道"],
+  "buildings": [
+    { "form": "dome", "u": 0.5, "v": 0.33, "w": 1.6, "d": 1.6, "h": 5, "label": "冷光ネオン塔" },
+    { "form": "tower", "u": 0.74, "v": 0.55, "w": 1.2, "d": 1.2, "h": 4 },
+    { "form": "cluster", "u": 0.26, "v": 0.58, "w": 1.6, "d": 1.6, "h": 3, "label": "白線通り" }
+  ],
+  "features": [
+    { "type": "plaza", "path": [[0.25, 0.72], [0.7, 0.72], [0.76, 0.94], [0.2, 0.94]] },
+    { "type": "stairs", "path": [[0.88, 0.25], [0.62, 0.5]], "steps": 5, "rise": 2.5 }
+  ],
   "roads": [
     { "to": "004-shinshoku-suru-shizukesa", "weight": 0.5 },
     { "to": "005-kioku-no-haikyo", "weight": 0.6 }

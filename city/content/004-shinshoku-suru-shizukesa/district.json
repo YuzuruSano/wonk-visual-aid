@@ -3,8 +3,16 @@
   "archetype": "聖域",
   "palette": { "primary": "#a98cff", "secondary": "#160a2a", "glow": "#d3c4ff" },
   "scale": 3,
-  "height": 8,
+  "height": 9,
   "landmarks": ["無音の丘", "問いの尖塔", "沈黙の回廊"],
+  "buildings": [
+    { "form": "spire", "u": 0.5, "v": 0.34, "w": 1.1, "d": 1.1, "h": 9, "label": "問いの尖塔" },
+    { "form": "gate", "u": 0.28, "v": 0.64, "w": 1.6, "d": 1.2, "h": 4, "label": "沈黙の回廊" },
+    { "form": "terrace", "u": 0.76, "v": 0.6, "w": 1.6, "d": 1.6, "h": 5, "label": "無音の丘" }
+  ],
+  "features": [
+    { "type": "stairs", "path": [[0.2, 0.86], [0.5, 0.42]], "steps": 7, "rise": 4 }
+  ],
   "roads": [
     { "to": "001-hajimari-no-toshi", "weight": 0.6 },
     { "to": "002-neon-no-yoru", "weight": 0.5 }

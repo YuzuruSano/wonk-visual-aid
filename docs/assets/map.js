@@ -18,6 +18,16 @@
   let hovered = null;
   let t0 = performance.now();
 
+  // ARCHIVE DIVE (潜行) — time becomes depth. Newest article = surface (z 0),
+  // older eras sink into strata below; diving descends through them like an
+  // SMT dungeon. `diveT` blends surface<->dive; `focusEra` is the depth cursor.
+  const LAYER_GAP = 5.5;    // world-z between consecutive eras when diving
+  let mode = 'map';         // 'map' | 'dive'
+  let diveT = 0;            // animated 0 (surface) .. 1 (fully dived)
+  let focusEra = 0, focusTarget = 0;
+  let zOff = 0;             // per-district z offset injected into iso()
+  let autoPanX = 0, autoPanY = 0; // camera follow while diving (CSS px)
+
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = canvas.clientWidth * dpr;
@@ -27,8 +37,8 @@
   // ---- projection ---------------------------------------------------------
   function iso(gx, gy, gz) {
     const s = cam.zoom;
-    const sx = (gx - gy) * TILE * s + canvas.width / 2 + cam.x * dpr;
-    const sy = (gx + gy) * (TILE / 2) * s - (gz || 0) * Z_UNIT * s + canvas.height / 2 + cam.y * dpr;
+    const sx = (gx - gy) * TILE * s + canvas.width / 2 + (cam.x + autoPanX) * dpr;
+    const sy = (gx + gy) * (TILE / 2) * s - ((gz || 0) + zOff) * Z_UNIT * s + canvas.height / 2 + (cam.y + autoPanY) * dpr;
     return [sx, sy];
   }
 
@@ -44,6 +54,15 @@
   function withA(hex, a) {
     const n = parseInt(hex.slice(1), 16);
     return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+  }
+
+  // ---- dive helpers -------------------------------------------------------
+  function baseZ(d) { return -(d._era || 0) * LAYER_GAP * diveT; }
+  function layerAlpha(d) {
+    if (diveT < 0.01) return 1;
+    const dist = Math.abs((d._era || 0) - focusEra);
+    const faded = Math.max(0.1, 1 - dist * 0.34);   // strata far from focus dim out
+    return 1 - diveT * (1 - faded);
   }
 
   // ---- sketch strokes -----------------------------------------------------
@@ -90,11 +109,10 @@
   }
 
   // ---- ground grid --------------------------------------------------------
-  function drawGrid() {
-    const b = city.bounds;
-    const pad = 3;
+  function gridPlane(alpha) {
+    const b = city.bounds, pad = 3;
     ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(60,120,130,0.16)';
+    ctx.strokeStyle = `rgba(60,120,130,${alpha})`;
     for (let gx = b.minX - pad; gx <= b.maxX + pad; gx++) {
       const a = iso(gx, b.minY - pad, 0), c = iso(gx, b.maxY + pad, 0);
       ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(c[0], c[1]); ctx.stroke();
@@ -102,6 +120,17 @@
     for (let gy = b.minY - pad; gy <= b.maxY + pad; gy++) {
       const a = iso(b.minX - pad, gy, 0), c = iso(b.maxX + pad, gy, 0);
       ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(c[0], c[1]); ctx.stroke();
+    }
+  }
+  function drawGrid() {
+    if (diveT < 0.01) { gridPlane(0.16); return; }
+    // surface grid fades out; one translucent floor per era fades in
+    gridPlane(0.16 * (1 - diveT));
+    for (const era of city.eras || []) {
+      zOff = -era.index * LAYER_GAP * diveT;
+      const dist = Math.abs(era.index - focusEra);
+      gridPlane(Math.max(0.03, 0.2 - dist * 0.05) * diveT);
+      zOff = 0;
     }
   }
 
@@ -112,8 +141,12 @@
       const A = city.byslug[r.from], B = city.byslug[r.to];
       if (!A || !B) continue;
       const ca = center(A), cb = center(B);
-      const p1 = iso(ca[0], ca[1], 0.2), p2 = iso(cb[0], cb[1], 0.2);
+      // each endpoint sits at its era depth -> cross-era roads become the
+      // vertical shafts you descend when diving the archive.
+      zOff = baseZ(A); const p1 = iso(ca[0], ca[1], 0.2); zOff = baseZ(B); const p2 = iso(cb[0], cb[1], 0.2); zOff = 0;
       const active = hovered && (hovered.slug === r.from || hovered.slug === r.to);
+      const ra = Math.min(layerAlpha(A), layerAlpha(B));
+      ctx.globalAlpha = ra;
       ctx.lineWidth = (active ? 3 : 1.8) * cam.zoom;
       ctx.strokeStyle = active ? withA(A.palette.glow, 0.95) : `rgba(130,235,240,${0.32 + r.weight * 0.35})`;
       ctx.shadowBlur = active ? 18 : 10;
@@ -125,6 +158,7 @@
       const px = p1[0] + (p2[0] - p1[0]) * tt, py = p1[1] + (p2[1] - p1[1]) * tt;
       ctx.fillStyle = active ? A.palette.glow : 'rgba(160,240,250,0.8)';
       ctx.beginPath(); ctx.arc(px, py, (active ? 3 : 2) * cam.zoom, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
     }
   }
 
@@ -314,6 +348,10 @@
     const glow = 0.5 + 0.5 * Math.sin(pulse * 6.28 + (x + y));
     const pal = d.palette;
 
+    zOff = baseZ(d);                       // sink this district to its era depth
+    const prevAlpha = ctx.globalAlpha;
+    ctx.globalAlpha = prevAlpha * layerAlpha(d);
+
     // ground glow pad
     const g00 = iso(x, y, 0), g10 = iso(x + w, y, 0), g11 = iso(x + w, y + h, 0), g01 = iso(x, y + h, 0);
     ctx.fillStyle = withA(pal.glow, 0.05 + (isHover ? 0.1 : 0));
@@ -348,6 +386,8 @@
       ctx.fillText(d.archetype, p[0], p[1] + 12 * cam.zoom);
       ctx.shadowBlur = 0;
     }
+    ctx.globalAlpha = prevAlpha;
+    zOff = 0;
   }
 
   // ---- hit test (approx via screen-space bounding of top face) ------------
@@ -355,9 +395,12 @@
     // iterate front-to-back (higher x+y first) so top towers win
     const sorted = [...city.districts].sort((a, b) => (b.x + b.y) - (a.x + a.y));
     for (const d of sorted) {
+      if (diveT > 0.5 && Math.abs((d._era || 0) - focusEra) > 0.6) continue; // only the focused stratum is interactive while diving
+      zOff = baseZ(d);
       const H = d._maxH || d.height || 4;
       const pts = [iso(d.x, d.y, H), iso(d.x + d.size.w, d.y, H), iso(d.x + d.size.w, d.y + d.size.h, H),
         iso(d.x, d.y + d.size.h, H), iso(d.x, d.y, 0), iso(d.x + d.size.w, d.y + d.size.h, 0)];
+      zOff = 0;
       const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
       if (mx >= Math.min(...xs) && mx <= Math.max(...xs) && my >= Math.min(...ys) && my <= Math.max(...ys)) return d;
     }
@@ -368,11 +411,28 @@
   function frame(now) {
     const pulse = ((now - t0) / 4000) % 1;
     jitterTick = Math.floor(now / 110); // ~9 redraws/sec -> living hand-drawn line
+
+    // animate dive state
+    diveT += ((mode === 'dive' ? 1 : 0) - diveT) * 0.12;
+    focusEra += (focusTarget - focusEra) * 0.16;
+    if (Math.abs(diveT - (mode === 'dive' ? 1 : 0)) < 0.002) diveT = mode === 'dive' ? 1 : 0;
+    // camera follows the focused stratum to screen centre (blended by diveT)
+    if (diveT > 0.001) {
+      const e = Math.round(focusEra);
+      const ds = city.districts.filter((x) => x._era === e);
+      const cx = ds.reduce((s, d) => s + d.x + d.size.w / 2, 0) / (ds.length || 1);
+      const cy = ds.reduce((s, d) => s + d.y + d.size.h / 2, 0) / (ds.length || 1);
+      const zL = -focusEra * LAYER_GAP * diveT;
+      autoPanX = diveT * (-(cx - cy) * TILE * cam.zoom / dpr - cam.x);
+      autoPanY = diveT * (-((cx + cy) * (TILE / 2) * cam.zoom - zL * Z_UNIT * cam.zoom) / dpr - cam.y);
+    } else { autoPanX = 0; autoPanY = 0; }
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // vignette background
+    // vignette background (darker + cooler the deeper you dive)
     const g = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, canvas.width * 0.7);
-    g.addColorStop(0, '#05131a'); g.addColorStop(1, '#01060a');
+    g.addColorStop(0, diveT > 0.5 ? '#07101c' : '#05131a'); g.addColorStop(1, '#010407');
     ctx.fillStyle = g; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    updateDepthHud();
 
     drawGrid();
     drawRoads(pulse);
@@ -412,8 +472,59 @@
     cam.zoom = Math.max(0.35, Math.min(3, cam.zoom * f));
   }, { passive: false });
   window.addEventListener('keydown', (e) => {
-    if (e.key === 's' || e.key === 'S') sketch = !sketch;   // toggle hand-drawn strokes
+    if (e.key === 's' || e.key === 'S') { sketch = !sketch; return; }   // hand-drawn toggle
+    if (e.key === 'd' || e.key === 'D') { toggleDive(); return; }       // enter/leave the dive
+    if (mode === 'dive') {
+      if (e.key === 'ArrowDown') { diveStep(1); e.preventDefault(); }   // deeper / older
+      else if (e.key === 'ArrowUp') { diveStep(-1); e.preventDefault(); } // shallower / newer
+      else if (e.key === 'Enter' || e.key === ' ') { enterFocused(); e.preventDefault(); }
+      else if (e.key === 'Escape') toggleDive();
+    }
   });
+
+  // ---- dive control -------------------------------------------------------
+  function toggleDive() {
+    mode = mode === 'dive' ? 'map' : 'dive';
+    if (mode === 'dive') { focusTarget = 0; focusEra = 0; }
+    document.body.classList.toggle('diving', mode === 'dive');
+    const btn = document.getElementById('dive-btn');
+    if (btn) btn.textContent = mode === 'dive' ? '▲ 浮上 SURFACE' : '▼ 潜行 DIVE';
+  }
+  function diveStep(dir) {
+    const max = (city.eras || []).length - 1;
+    focusTarget = Math.max(0, Math.min(max, Math.round(focusTarget) + dir));
+  }
+  function enterFocused() {
+    const e = Math.round(focusEra);
+    const d = city.districts.find((x) => x._era === e);
+    if (d) location.href = d.href;
+  }
+
+  // ---- depth gauge (SMT-style descent meter) ------------------------------
+  function buildDepthGauge() {
+    const g = document.getElementById('depth-gauge');
+    if (!g || !city.eras) return;
+    g.innerHTML = city.eras.map((e) =>
+      `<div class="tick" data-era="${e.index}"><span class="d">B${e.index}</span>` +
+      `<span class="ym">${e.label}</span><span class="ct">${e.count}区</span></div>`).join('');
+    g.querySelectorAll('.tick').forEach((el) => el.addEventListener('click', () => {
+      if (mode !== 'dive') toggleDive();
+      focusTarget = +el.dataset.era;
+    }));
+  }
+  function updateDepthHud() {
+    const g = document.getElementById('depth-gauge');
+    if (!g) return;
+    g.style.opacity = diveT > 0.05 ? 1 : 0;
+    const cur = Math.round(focusEra);
+    g.querySelectorAll('.tick').forEach((el) => el.classList.toggle('on', +el.dataset.era === cur));
+    const era = (city.eras || [])[cur];
+    const rd = document.getElementById('depth-read');
+    if (rd) {
+      rd.style.opacity = diveT > 0.05 ? 1 : 0;
+      if (era) rd.innerHTML = `<b>DEPTH B${cur}</b> / ${era.label} <span>${era.count} 区画</span>`;
+    }
+  }
 
   function updateHud() {
     if (!hovered) { hud.classList.remove('on'); return; }
@@ -445,6 +556,15 @@
     cam.y -= (c[1] - canvas.height / 2) / dpr;
   }
 
+  // Bucket districts into eras by year-month; newest era = index 0 (surface).
+  function computeEras() {
+    const ym = (d) => (d.date || '2000-01').slice(0, 7);
+    const keys = [...new Set(city.districts.map(ym))].sort().reverse(); // newest first
+    city.eras = keys.map((k, i) => ({ index: i, ym: k, label: k.replace('-', '.'), count: 0 }));
+    const idxOf = Object.fromEntries(keys.map((k, i) => [k, i]));
+    for (const d of city.districts) { d._era = idxOf[ym(d)]; city.eras[d._era].count++; }
+  }
+
   fetch('city.json').then((r) => r.json()).then((data) => {
     city = data;
     city.byslug = {};
@@ -453,7 +573,11 @@
       const heights = (d.buildings && d.buildings.length) ? d.buildings.map((b) => b.h || d.height || 4) : [d.height || 4];
       d._maxH = Math.max(...heights);
     }
+    computeEras();
     compass.textContent = `${city.districts.length} DISTRICTS`;
+    buildDepthGauge();
+    const bt = document.getElementById('dive-btn');
+    if (bt) bt.addEventListener('click', toggleDive);
     resize();
     fitView();
     requestAnimationFrame(frame);

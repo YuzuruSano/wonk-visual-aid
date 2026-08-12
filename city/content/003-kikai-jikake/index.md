@@ -1,6 +1,6 @@
 ---
 title: 機械仕掛けの区画
-date: 2026-07-15
+date: 2026-05-15
 tags: [make, code, ai]
 summary: この都市そのものを組み立てる工場。
 ---

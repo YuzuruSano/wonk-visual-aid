@@ -1,6 +1,6 @@
 ---
 title: はじまりの都市
-date: 2026-07-01
+date: 2026-01-05
 tags: [meta, city, ai]
 summary: 最初の一区画。ここからすべての街路が伸びる。
 ---

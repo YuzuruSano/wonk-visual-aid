@@ -68,6 +68,36 @@ const districts = articles.map((a) => {
 
 // ---- layout ----
 const { placed, roads, bounds } = layoutCity(districts);
+
+// ---- city-spanning connections (cross-district through-lines) ----
+// The avenue is the timeline: it threads EVERY district in chronological order,
+// so on the surface it reads as the main street and, when diving, the same line
+// becomes the spiral shaft descending through all eras. The river meanders
+// across the whole map through the gaps between neighbourhoods.
+function cityConnections() {
+  const avenueSlugs = [...placed].sort((a, b) => a.founded - b.founded || a.slug.localeCompare(b.slug)).map((d) => d.slug);
+  // river: sweep left->right across the bounds, waving in y, nudged out of any
+  // district footprint so it runs through the open ground between clusters.
+  const cx = (d) => d.x + d.size.w / 2, cy = (d) => d.y + d.size.h / 2;
+  const midY = placed.reduce((s, d) => s + cy(d), 0) / placed.length;
+  const amp = Math.max(2, (bounds.maxY - bounds.minY) / 3);
+  const river = [];
+  const steps = 14;
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const gx = bounds.minX - 1 + t * (bounds.maxX - bounds.minX + 2);
+    let gy = midY + Math.sin(t * Math.PI * 2.2) * amp;
+    // push away from the nearest district centre so the river avoids buildings
+    for (const d of placed) {
+      const dx = gx - cx(d), dy = gy - cy(d), dist = Math.hypot(dx, dy);
+      const clearance = Math.max(d.size.w, d.size.h) / 2 + 1.5;
+      if (dist < clearance && dist > 0.01) gy += (dy / dist) * (clearance - dist);
+    }
+    river.push([+gx.toFixed(2), +gy.toFixed(2)]);
+  }
+  return [{ type: 'avenue', slugs: avenueSlugs }, { type: 'river', path: river }];
+}
+
 const cityData = {
   site: SITE,
   bounds,
@@ -80,6 +110,7 @@ const cityData = {
     href: d.href, summary: d.aiSummary || '', generatedBy: d.generatedBy,
   })),
   roads,
+  cityFeatures: cityConnections(),
 };
 
 // ---- emit ----

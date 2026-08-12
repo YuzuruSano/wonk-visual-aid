@@ -162,6 +162,40 @@
     }
   }
 
+  // ---- city-spanning connections (avenue = timeline spine, great river) ---
+  const cityAvenue = () => (city.cityFeatures || []).find((f) => f.type === 'avenue') || {};
+  const cityRiver = () => (city.cityFeatures || []).find((f) => f.type === 'river') || {};
+  function stroke(pts, style, width, dash, dashOff) {
+    ctx.strokeStyle = style; ctx.lineWidth = width;
+    if (dash) { ctx.setLineDash(dash); ctx.lineDashOffset = dashOff || 0; }
+    ctx.beginPath(); smooth(pts); ctx.stroke();
+    if (dash) ctx.setLineDash([]);
+  }
+  function drawAvenue(f, pulse) {
+    const ds = (f.slugs || []).map((s) => city.byslug[s]).filter(Boolean);
+    if (ds.length < 2) return;
+    // each vertex sits at its district's era depth -> a street on the surface,
+    // a spiral shaft through every era while diving. This is the "またぎ接続".
+    const pts = ds.map((d) => { zOff = baseZ(d); const c = center(d); const p = iso(c[0], c[1], 0.25); return p; });
+    zOff = 0;
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.shadowBlur = 14; ctx.shadowColor = '#ffce6b';
+    stroke(pts, 'rgba(255,206,107,0.16)', 10 * cam.zoom);          // wide bed
+    stroke(pts, 'rgba(255,230,168,0.5)', 2.4 * cam.zoom);          // core line
+    stroke(pts, 'rgba(255,242,207,0.7)', 1.2 * cam.zoom, [5 * cam.zoom, 10 * cam.zoom], -pulse * 60); // flowing history
+    ctx.shadowBlur = 0;
+  }
+  function drawGreatRiver(f, pulse) {
+    const a = 1 - diveT * 0.85;                                    // a surface waterway; recedes when diving
+    if (a <= 0.03 || !f.path) return;
+    const pts = f.path.map(([gx, gy]) => iso(gx, gy, 0.02));
+    ctx.globalAlpha = a; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.shadowBlur = 12; ctx.shadowColor = '#8fd0ff';
+    stroke(pts, 'rgba(46,127,208,0.5)', 7 * cam.zoom);
+    stroke(pts, `rgba(143,208,255,${0.45 + 0.25 * Math.sin(pulse * 6.28)})`, 1.6 * cam.zoom, [7 * cam.zoom, 9 * cam.zoom], -pulse * 46);
+    ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+  }
+
   // ---- geometry primitives ------------------------------------------------
   function fillFace(a, b, c, d, style) {
     ctx.fillStyle = style;
@@ -435,7 +469,9 @@
     updateDepthHud();
 
     drawGrid();
+    drawGreatRiver(cityRiver(), pulse);   // water sits on the ground, under everything
     drawRoads(pulse);
+    drawAvenue(cityAvenue(), pulse);      // the timeline spine, over the ground
     // districts back-to-front
     const sorted = [...city.districts].sort((a, b) => (a.x + a.y) - (b.x + b.y));
     for (const d of sorted) drawDistrict(d, pulse);

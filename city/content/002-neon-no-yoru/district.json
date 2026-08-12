@@ -1,0 +1,14 @@
+{
+  "slug": "002-neon-no-yoru",
+  "archetype": "歓楽街",
+  "palette": { "primary": "#8fd6ff", "secondary": "#0a1620", "glow": "#d6f2ff" },
+  "scale": 4,
+  "height": 5,
+  "landmarks": ["白線通り", "冷光ネオン塔", "深夜の横断歩道"],
+  "roads": [
+    { "to": "004-shinshoku-suru-shizukesa", "weight": 0.5 },
+    { "to": "005-kioku-no-haikyo", "weight": 0.6 }
+  ],
+  "aiSummary": "白線だけが冷たく光る、青い深夜のアスファルト。",
+  "generatedBy": "claude"
+}

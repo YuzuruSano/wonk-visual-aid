@@ -1,0 +1,14 @@
+{
+  "slug": "003-kikai-jikake",
+  "archetype": "工業区",
+  "palette": { "primary": "#b8c2cc", "secondary": "#12181d", "glow": "#e6f0f6" },
+  "scale": 4,
+  "height": 6,
+  "landmarks": ["生成工場", "部品倉庫", "ビルドの煙突"],
+  "roads": [
+    { "to": "001-hajimari-no-toshi", "weight": 0.8 },
+    { "to": "002-neon-no-yoru", "weight": 0.4 }
+  ],
+  "aiSummary": "無機質な部品を組み上げ、都市そのものを鍛造する工場区。",
+  "generatedBy": "claude"
+}

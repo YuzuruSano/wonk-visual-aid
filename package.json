@@ -33,7 +33,11 @@
   "scripts": {
     "dev": "export NODE_ENV=development && webpack --mode development --config webpack.dev.js && node app.js",
     "build-local": "export NODE_ENV=production && webpack --config webpack.production.js && node app.js",
-    "build": "export NODE_ENV=production && webpack --config webpack.production.js"
+    "build": "export NODE_ENV=production && webpack --config webpack.production.js",
+    "city:build": "node city/build.mjs",
+    "city:preview": "node city/build.mjs && node city/serve.mjs",
+    "city:prompt": "node city/generate.mjs prompt",
+    "city:procedural": "node city/generate.mjs procedural"
   },
   "heroku-run-build-script": true
 }

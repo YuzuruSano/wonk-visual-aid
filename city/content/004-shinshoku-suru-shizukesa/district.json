@@ -1,0 +1,14 @@
+{
+  "slug": "004-shinshoku-suru-shizukesa",
+  "archetype": "聖域",
+  "palette": { "primary": "#a98cff", "secondary": "#160a2a", "glow": "#d3c4ff" },
+  "scale": 3,
+  "height": 8,
+  "landmarks": ["無音の丘", "問いの尖塔", "沈黙の回廊"],
+  "roads": [
+    { "to": "001-hajimari-no-toshi", "weight": 0.6 },
+    { "to": "002-neon-no-yoru", "weight": 0.5 }
+  ],
+  "aiSummary": "音のない丘に、答えの出ない問いだけが積もっていく。",
+  "generatedBy": "claude"
+}

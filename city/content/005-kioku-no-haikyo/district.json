@@ -1,0 +1,14 @@
+{
+  "slug": "005-kioku-no-haikyo",
+  "archetype": "廃墟",
+  "palette": { "primary": "#7fc06a", "secondary": "#0d1a10", "glow": "#c8f0a8" },
+  "scale": 4,
+  "height": 4,
+  "landmarks": ["崩れた集合住宅", "割れ目の芽", "忘却の水路"],
+  "roads": [
+    { "to": "002-neon-no-yoru", "weight": 0.6 },
+    { "to": "004-shinshoku-suru-shizukesa", "weight": 0.4 }
+  ],
+  "aiSummary": "崩れたコンクリートの割れ目から、緑がまっすぐ伸びる。",
+  "generatedBy": "claude"
+}

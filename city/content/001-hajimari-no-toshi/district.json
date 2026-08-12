@@ -1,0 +1,14 @@
+{
+  "slug": "001-hajimari-no-toshi",
+  "archetype": "電脳街",
+  "palette": { "primary": "#33ffd0", "secondary": "#04201d", "glow": "#7cffea" },
+  "scale": 5,
+  "height": 7,
+  "landmarks": ["中央広場", "宣言の塔", "始発の環状線"],
+  "roads": [
+    { "to": "003-kikai-jikake", "weight": 0.7 },
+    { "to": "004-shinshoku-suru-shizukesa", "weight": 0.6 }
+  ],
+  "aiSummary": "すべての街路が生まれ、そして帰ってくる中央広場。",
+  "generatedBy": "claude"
+}

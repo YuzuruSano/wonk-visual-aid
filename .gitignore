@@ -6,3 +6,9 @@ dev/tmp
 dev/css
 **/*.log
 **/*.html
+# --- WONK CITY ---
+# `**/*.html` above would swallow the generator's templates and the static
+# build output; re-include them explicitly.
+!city/templates/*.html
+!docs/
+!docs/**/*.html

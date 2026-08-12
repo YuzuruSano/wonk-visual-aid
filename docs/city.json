@@ -1,0 +1,202 @@
+{
+  "site": {
+    "name": "WONK CITY",
+    "tagline": "記事を書くほど、都市になる。"
+  },
+  "bounds": {
+    "minX": -14,
+    "minY": -5,
+    "maxX": 11,
+    "maxY": 9
+  },
+  "generatedAt": "",
+  "districts": [
+    {
+      "slug": "001-hajimari-no-toshi",
+      "title": "はじまりの都市",
+      "date": "2026-07-01",
+      "tags": [
+        "meta",
+        "city",
+        "ai"
+      ],
+      "archetype": "電脳街",
+      "palette": {
+        "primary": "#33ffd0",
+        "secondary": "#04201d",
+        "glow": "#7cffea"
+      },
+      "landmarks": [
+        "中央広場",
+        "宣言の塔",
+        "始発の環状線"
+      ],
+      "height": 7,
+      "size": {
+        "w": 5,
+        "h": 4
+      },
+      "x": 0,
+      "y": 0,
+      "href": "a/001-hajimari-no-toshi/",
+      "summary": "すべての街路が生まれ、そして帰ってくる中央広場。",
+      "generatedBy": "claude"
+    },
+    {
+      "slug": "002-neon-no-yoru",
+      "title": "ネオンの夜を歩く",
+      "date": "2026-07-08",
+      "tags": [
+        "night",
+        "walk",
+        "street"
+      ],
+      "archetype": "歓楽街",
+      "palette": {
+        "primary": "#8fd6ff",
+        "secondary": "#0a1620",
+        "glow": "#d6f2ff"
+      },
+      "landmarks": [
+        "白線通り",
+        "冷光ネオン塔",
+        "深夜の横断歩道"
+      ],
+      "height": 5,
+      "size": {
+        "w": 4,
+        "h": 3
+      },
+      "x": -8,
+      "y": -1,
+      "href": "a/002-neon-no-yoru/",
+      "summary": "白線だけが冷たく光る、青い深夜のアスファルト。",
+      "generatedBy": "claude"
+    },
+    {
+      "slug": "003-kikai-jikake",
+      "title": "機械仕掛けの区画",
+      "date": "2026-07-15",
+      "tags": [
+        "make",
+        "code",
+        "ai"
+      ],
+      "archetype": "工業区",
+      "palette": {
+        "primary": "#b8c2cc",
+        "secondary": "#12181d",
+        "glow": "#e6f0f6"
+      },
+      "landmarks": [
+        "生成工場",
+        "部品倉庫",
+        "ビルドの煙突"
+      ],
+      "height": 6,
+      "size": {
+        "w": 4,
+        "h": 3
+      },
+      "x": 4,
+      "y": -5,
+      "href": "a/003-kikai-jikake/",
+      "summary": "無機質な部品を組み上げ、都市そのものを鍛造する工場区。",
+      "generatedBy": "claude"
+    },
+    {
+      "slug": "004-shinshoku-suru-shizukesa",
+      "title": "侵蝕する静けさ",
+      "date": "2026-07-22",
+      "tags": [
+        "think",
+        "city",
+        "night"
+      ],
+      "archetype": "聖域",
+      "palette": {
+        "primary": "#a98cff",
+        "secondary": "#160a2a",
+        "glow": "#d3c4ff"
+      },
+      "landmarks": [
+        "無音の丘",
+        "問いの尖塔",
+        "沈黙の回廊"
+      ],
+      "height": 8,
+      "size": {
+        "w": 3,
+        "h": 2
+      },
+      "x": 8,
+      "y": 7,
+      "href": "a/004-shinshoku-suru-shizukesa/",
+      "summary": "音のない丘に、答えの出ない問いだけが積もっていく。",
+      "generatedBy": "claude"
+    },
+    {
+      "slug": "005-kioku-no-haikyo",
+      "title": "記憶の廃墟に芽吹く",
+      "date": "2026-07-29",
+      "tags": [
+        "memory",
+        "ruin",
+        "green"
+      ],
+      "archetype": "廃墟",
+      "palette": {
+        "primary": "#7fc06a",
+        "secondary": "#0d1a10",
+        "glow": "#c8f0a8"
+      },
+      "landmarks": [
+        "崩れた集合住宅",
+        "割れ目の芽",
+        "忘却の水路"
+      ],
+      "height": 4,
+      "size": {
+        "w": 4,
+        "h": 3
+      },
+      "x": -14,
+      "y": 0,
+      "href": "a/005-kioku-no-haikyo/",
+      "summary": "崩れたコンクリートの割れ目から、緑がまっすぐ伸びる。",
+      "generatedBy": "claude"
+    }
+  ],
+  "roads": [
+    {
+      "from": "001-hajimari-no-toshi",
+      "to": "003-kikai-jikake",
+      "weight": 0.7
+    },
+    {
+      "from": "001-hajimari-no-toshi",
+      "to": "004-shinshoku-suru-shizukesa",
+      "weight": 0.6
+    },
+    {
+      "from": "002-neon-no-yoru",
+      "to": "004-shinshoku-suru-shizukesa",
+      "weight": 0.5
+    },
+    {
+      "from": "002-neon-no-yoru",
+      "to": "005-kioku-no-haikyo",
+      "weight": 0.6
+    },
+    {
+      "from": "003-kikai-jikake",
+      "to": "002-neon-no-yoru",
+      "weight": 0.4
+    },
+    {
+      "from": "005-kioku-no-haikyo",
+      "to": "004-shinshoku-suru-shizukesa",
+      "weight": 0.4
+    }
+  ]
+}

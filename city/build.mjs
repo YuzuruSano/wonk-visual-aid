@@ -95,7 +95,57 @@ function cityConnections() {
     }
     river.push([+gx.toFixed(2), +gy.toFixed(2)]);
   }
-  return [{ type: 'avenue', slugs: avenueSlugs }, { type: 'river', path: river }];
+
+  // Bridges: wherever the avenue crosses the river, span it — the literal "またぐ".
+  const avPts = avenueSlugs.map((s) => { const d = placed.find((p) => p.slug === s); return [cx(d), cy(d)]; });
+  const bridges = [];
+  for (let i = 0; i < avPts.length - 1; i++) {
+    for (let j = 0; j < river.length - 1; j++) {
+      const X = segInt(avPts[i], avPts[i + 1], river[j], river[j + 1]);
+      if (X) {
+        const ang = Math.atan2(avPts[i + 1][1] - avPts[i][1], avPts[i + 1][0] - avPts[i][0]);
+        bridges.push({ type: 'bridge', at: [+X[0].toFixed(2), +X[1].toFixed(2)], angle: +ang.toFixed(3), h: 1.4 });
+      }
+    }
+  }
+
+  // Tributaries: the great river sends an offshoot into each district it runs
+  // close to — wiring the city-spanning water into the neighbourhoods.
+  const tributaries = [];
+  for (const d of placed) {
+    const c = [cx(d), cy(d)];
+    let best = null, bd = Infinity;
+    for (let j = 0; j < river.length - 1; j++) {
+      const q = closestOnSeg(c, river[j], river[j + 1]);
+      const dd = Math.hypot(c[0] - q[0], c[1] - q[1]);
+      if (dd < bd) { bd = dd; best = q; }
+    }
+    const reach = Math.max(d.size.w, d.size.h) / 2 + 3.5;
+    if (best && bd < reach && bd > 0.5) {
+      const half = Math.max(d.size.w, d.size.h) / 2 * 0.85;
+      const ux = (c[0] - best[0]) / bd, uy = (c[1] - best[1]) / bd;
+      const edge = [c[0] - ux * half, c[1] - uy * half]; // stop at the district's edge
+      tributaries.push({ type: 'tributary', path: [[+best[0].toFixed(2), +best[1].toFixed(2)], [+edge[0].toFixed(2), +edge[1].toFixed(2)]] });
+    }
+  }
+
+  return [{ type: 'avenue', slugs: avenueSlugs }, { type: 'river', path: river }, ...bridges, ...tributaries];
+}
+
+// segment/segment intersection (grid coords) -> point or null
+function segInt(p1, p2, p3, p4) {
+  const d = (p4[1] - p3[1]) * (p2[0] - p1[0]) - (p4[0] - p3[0]) * (p2[1] - p1[1]);
+  if (Math.abs(d) < 1e-9) return null;
+  const ua = ((p4[0] - p3[0]) * (p1[1] - p3[1]) - (p4[1] - p3[1]) * (p1[0] - p3[0])) / d;
+  const ub = ((p2[0] - p1[0]) * (p1[1] - p3[1]) - (p2[1] - p1[1]) * (p1[0] - p3[0])) / d;
+  if (ua < 0 || ua > 1 || ub < 0 || ub > 1) return null;
+  return [p1[0] + ua * (p2[0] - p1[0]), p1[1] + ua * (p2[1] - p1[1])];
+}
+// closest point on segment ab to point p
+function closestOnSeg(p, a, b) {
+  const abx = b[0] - a[0], aby = b[1] - a[1];
+  const t2 = Math.max(0, Math.min(1, ((p[0] - a[0]) * abx + (p[1] - a[1]) * aby) / (abx * abx + aby * aby || 1)));
+  return [a[0] + abx * t2, a[1] + aby * t2];
 }
 
 const cityData = {

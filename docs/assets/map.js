@@ -195,6 +195,44 @@
     stroke(pts, `rgba(143,208,255,${0.45 + 0.25 * Math.sin(pulse * 6.28)})`, 1.6 * cam.zoom, [7 * cam.zoom, 9 * cam.zoom], -pulse * 46);
     ctx.shadowBlur = 0; ctx.globalAlpha = 1;
   }
+  function drawTributaries(pulse) {
+    const a = 1 - diveT * 0.85;
+    if (a <= 0.03) return;
+    ctx.globalAlpha = a; ctx.lineCap = 'round';
+    ctx.shadowBlur = 8; ctx.shadowColor = '#8fd0ff';
+    for (const f of city.cityFeatures || []) {
+      if (f.type !== 'tributary') continue;
+      const p = f.path.map(([gx, gy]) => iso(gx, gy, 0.02));
+      ctx.strokeStyle = 'rgba(46,127,208,0.4)'; ctx.lineWidth = 3.4 * cam.zoom;
+      ctx.beginPath(); ctx.moveTo(p[0][0], p[0][1]); ctx.lineTo(p[1][0], p[1][1]); ctx.stroke();
+      ctx.strokeStyle = `rgba(143,208,255,${0.4 + 0.25 * Math.sin(pulse * 6.28 + p[0][0])})`; ctx.lineWidth = 1 * cam.zoom;
+      ctx.setLineDash([4 * cam.zoom, 6 * cam.zoom]); ctx.lineDashOffset = -pulse * 34;
+      ctx.beginPath(); ctx.moveTo(p[0][0], p[0][1]); ctx.lineTo(p[1][0], p[1][1]); ctx.stroke(); ctx.setLineDash([]);
+    }
+    ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+  }
+  function drawBridges() {
+    const a = 1 - diveT * 0.8;                                     // bridges belong to the surface
+    if (a <= 0.03) return;
+    ctx.globalAlpha = a; ctx.lineCap = 'round';
+    for (const f of city.cityFeatures || []) {
+      if (f.type !== 'bridge') continue;
+      const [gx, gy] = f.at, ang = f.angle || 0, h = f.h || 1.4, L = 1.3;
+      const ax = gx - Math.cos(ang) * L, ay = gy - Math.sin(ang) * L;
+      const bx = gx + Math.cos(ang) * L, by = gy + Math.sin(ang) * L;
+      const A = iso(ax, ay, h), B = iso(bx, by, h);
+      ctx.shadowBlur = 10; ctx.shadowColor = '#ffce6b';
+      ctx.strokeStyle = 'rgba(255,214,120,0.9)'; ctx.lineWidth = 2.6 * cam.zoom;
+      scribbleLine(A[0], A[1], B[0], B[1], (gx * 13 + gy * 7) * 2.3);        // deck
+      ctx.lineWidth = 1.4 * cam.zoom;
+      for (const [px, py] of [[ax, ay], [bx, by]]) {                          // piers into the water
+        const g = iso(px, py, 0), t = iso(px, py, h);
+        ctx.beginPath(); ctx.moveTo(g[0], g[1]); ctx.lineTo(t[0], t[1]); ctx.stroke();
+      }
+      ctx.shadowBlur = 0;
+    }
+    ctx.globalAlpha = 1;
+  }
 
   // ---- geometry primitives ------------------------------------------------
   function fillFace(a, b, c, d, style) {
@@ -470,8 +508,10 @@
 
     drawGrid();
     drawGreatRiver(cityRiver(), pulse);   // water sits on the ground, under everything
+    drawTributaries(pulse);               // offshoots wiring the river into districts
     drawRoads(pulse);
     drawAvenue(cityAvenue(), pulse);      // the timeline spine, over the ground
+    drawBridges();                        // the avenue vaults over the river — the "またぐ"
     // districts back-to-front
     const sorted = [...city.districts].sort((a, b) => (a.x + a.y) - (b.x + b.y));
     for (const d of sorted) drawDistrict(d, pulse);

@@ -483,15 +483,30 @@
   // Direct descendant of the archived VJ framework: procedural particle/flow
   // art behind the city. A fresh instance (type + seed) is generated on load;
   // press W to re-roll, or ?weather=rain to pin one.
-  const WEATHER_TYPES = ['clear', 'rain', 'snow', 'fog', 'storm', 'aurora'];
-  const WEATHER_LABEL = { clear: '☀ 晴 CLEAR', rain: '☂ 雨 RAIN', snow: '❄ 雪 SNOW', fog: '☁ 霧 FOG', storm: '⚡ 雷雨 STORM', aurora: '✦ 極光 AURORA' };
-  const wx = { type: 'clear', drops: [], flakes: [], stars: [], blobs: [], ribbons: [], wind: 0.3, flash: 0, nextBolt: 0, bolt: null, boltUntil: 0 };
+  const WEATHER_TYPES = ['clear', 'rain', 'snow', 'fog', 'storm', 'aurora', 'sakura', 'meteor', 'sandstorm'];
+  const WEATHER_LABEL = {
+    clear: '☀ 晴 CLEAR', rain: '☂ 雨 RAIN', snow: '❄ 雪 SNOW', fog: '☁ 霧 FOG',
+    storm: '⚡ 雷雨 STORM', aurora: '✦ 極光 AURORA', sakura: '✿ 桜 SAKURA',
+    meteor: '☄ 流星 METEOR', sandstorm: '≋ 砂嵐 SAND',
+  };
+  // 連動: each archetype pulls the sky toward a mood; the surface weather is
+  // rolled from the NEWEST article's affinity, so the city's sky reflects the
+  // latest post (still random within the set, so it varies every visit).
+  const ARCH_WX = {
+    電脳街: ['clear', 'aurora', 'meteor'],
+    歓楽街: ['aurora', 'sakura', 'clear'],
+    工業区: ['rain', 'fog', 'sandstorm'],
+    居住区: ['clear', 'snow', 'sakura'],
+    聖域: ['snow', 'fog', 'aurora'],
+    廃墟: ['fog', 'rain', 'storm'],
+  };
+  const wx = { type: 'clear', drops: [], flakes: [], stars: [], blobs: [], ribbons: [], petals: [], meteors: [], dust: [], wind: 0.3, flash: 0, nextBolt: 0, bolt: null, boltUntil: 0, nextMeteor: 0 };
   const rand = (a, b) => a + Math.random() * (b - a);
 
   function initWeather(type) {
     wx.type = type; wx.wind = rand(-0.5, 0.9);
-    wx.drops = []; wx.flakes = []; wx.stars = []; wx.blobs = []; wx.ribbons = [];
-    wx.flash = 0; wx.bolt = null; wx.nextBolt = performance.now() + rand(1500, 4000);
+    wx.drops = []; wx.flakes = []; wx.stars = []; wx.blobs = []; wx.ribbons = []; wx.petals = []; wx.meteors = []; wx.dust = [];
+    wx.flash = 0; wx.bolt = null; wx.nextBolt = performance.now() + rand(1500, 4000); wx.nextMeteor = performance.now() + rand(400, 1400);
     const W = canvas.width, H = canvas.height, area = (W * H) / 1e6;
     if (type === 'rain' || type === 'storm') {
       const n = Math.round((type === 'storm' ? 240 : 160) * area);
@@ -508,14 +523,27 @@
       const cols = [['#33ffd0', '#7cffea'], ['#8f6bff', '#d3c4ff'], ['#46e6d0', '#8fd6ff'], ['#ff6bd0', '#ffce6b']];
       const pick = cols[Math.floor(Math.random() * cols.length)];
       for (let i = 0; i < 3; i++) wx.ribbons.push({ y: rand(H * 0.12, H * 0.5), amp: rand(30, 90) * dpr, len: rand(0.5, 1.2), ph: rand(0, 6.28), sp: rand(0.2, 0.6), col: pick[i % 2], w: rand(60, 140) * dpr });
+    } else if (type === 'sakura') {
+      const n = Math.round(115 * area);
+      for (let i = 0; i < n; i++) wx.petals.push({ x: Math.random() * W, y: Math.random() * H, v: rand(0.7, 1.9), r: rand(2, 4.5) * dpr, ph: rand(0, 6.28), sw: rand(0.6, 1.6), rot: rand(0, 6.28), vr: rand(-0.05, 0.05) });
+    } else if (type === 'meteor') {
+      const n = Math.round(130 * area);
+      for (let i = 0; i < n; i++) wx.stars.push({ x: Math.random() * W, y: Math.random() * H * 0.8, r: rand(0.4, 1.5) * dpr, tw: rand(0, 6.28), sp: rand(0.5, 2) });
+    } else if (type === 'sandstorm') {
+      const n = Math.round(300 * area);
+      for (let i = 0; i < n; i++) wx.dust.push({ x: Math.random() * W, y: Math.random() * H, v: rand(6, 14), r: rand(0.6, 2) * dpr });
     }
     const el = document.getElementById('weather-tag'); if (el) el.textContent = WEATHER_LABEL[type];
   }
   function cycleWeather() { const i = WEATHER_TYPES.indexOf(wx.type); initWeather(WEATHER_TYPES[(i + 1) % WEATHER_TYPES.length]); }
   function pickWeather() {
     const q = new URLSearchParams(location.search).get('weather');
-    const t = WEATHER_TYPES.includes(q) ? q : (WEATHER_TYPES.includes(city.weather) ? city.weather : WEATHER_TYPES[Math.floor(Math.random() * WEATHER_TYPES.length)]);
-    initWeather(t);
+    if (WEATHER_TYPES.includes(q)) return initWeather(q);          // URL pin
+    if (WEATHER_TYPES.includes(city.weather)) return initWeather(city.weather); // author pin
+    // 連動: roll from the newest article's archetype affinity
+    const newest = city.districts.find((d) => d._era === 0) || city.districts[0];
+    const aff = (newest && ARCH_WX[newest.archetype]) || WEATHER_TYPES;
+    initWeather(aff[Math.floor(Math.random() * aff.length)]);
   }
   function makeBolt() {
     const W = canvas.width; let x = rand(W * 0.2, W * 0.8), y = 0; const pts = [[x, y]];
@@ -535,7 +563,7 @@
         ctx.strokeStyle = withA(r.col, 0.12); ctx.lineWidth = r.w; ctx.shadowBlur = 40; ctx.shadowColor = r.col; ctx.stroke();
       }
       ctx.shadowBlur = 0; ctx.globalCompositeOperation = 'source-over';
-    } else if (wx.type === 'clear') {
+    } else if (wx.type === 'clear' || wx.type === 'meteor') {
       for (const s of wx.stars) { const a = 0.3 + 0.5 * Math.sin(t * s.sp + s.tw); if (a > 0) { ctx.fillStyle = `rgba(190,240,255,${a})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.28); ctx.fill(); } }
     } else if (wx.type === 'fog') {
       for (const b of wx.blobs) {
@@ -571,7 +599,45 @@
         ctx.strokeStyle = 'rgba(220,235,255,0.9)'; ctx.lineWidth = 2 * dpr; ctx.shadowBlur = 20; ctx.shadowColor = '#cfe6ff';
         ctx.beginPath(); wx.bolt.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.stroke(); ctx.shadowBlur = 0;
       } else if (now >= wx.boltUntil) wx.bolt = null;
+    } else if (wx.type === 'sakura') {
+      for (const p of wx.petals) {
+        p.ph += 0.02; p.rot += p.vr;
+        p.x += Math.sin(p.ph) * p.sw * dpr + wx.wind * dpr * 0.4; p.y += p.v * dpr;
+        if (p.y > H) { p.y = -5; p.x = Math.random() * W; } if (p.x > W) p.x -= W; if (p.x < 0) p.x += W;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+        ctx.fillStyle = 'rgba(255,183,213,0.85)'; ctx.beginPath(); ctx.ellipse(0, 0, p.r, p.r * 0.5, 0, 0, 6.28); ctx.fill();
+        ctx.restore();
+      }
+    } else if (wx.type === 'meteor') {
+      if (now > wx.nextMeteor) { wx.nextMeteor = now + rand(500, 2000); wx.meteors.push({ x: rand(0, W), y: rand(0, H * 0.2), vx: rand(-14, -6) * dpr, vy: rand(6, 12) * dpr, life: 1 }); }
+      for (const m of wx.meteors) { m.x += m.vx; m.y += m.vy; m.life -= 0.012; }
+      wx.meteors = wx.meteors.filter((m) => m.life > 0);
+      for (const m of wx.meteors) {
+        const tx = m.x - m.vx * 4, ty = m.y - m.vy * 4;
+        const g = ctx.createLinearGradient(m.x, m.y, tx, ty);
+        g.addColorStop(0, `rgba(200,240,255,${m.life})`); g.addColorStop(1, 'rgba(200,240,255,0)');
+        ctx.strokeStyle = g; ctx.lineWidth = 2 * dpr; ctx.shadowBlur = 12; ctx.shadowColor = '#cfe6ff';
+        ctx.beginPath(); ctx.moveTo(m.x, m.y); ctx.lineTo(tx, ty); ctx.stroke(); ctx.shadowBlur = 0;
+      }
+    } else if (wx.type === 'sandstorm') {
+      ctx.fillStyle = `rgba(200,165,110,${0.1 + 0.03 * Math.sin(now / 700)})`; ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = 'rgba(222,190,140,0.35)'; ctx.lineWidth = 1.2 * dpr;
+      for (const d of wx.dust) {
+        d.x += d.v * dpr * 1.2; d.y += Math.sin((d.x + now * 0.05) / 80) * 0.5 * dpr;
+        if (d.x > W + 10) { d.x = -10; d.y = Math.random() * H; }
+        ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - d.v * 1.5 * dpr, d.y); ctx.stroke();
+      }
     }
+  }
+
+  // 連動: the deeper you dive the archive, the mistier/darker it gets —
+  // the old strata are half-forgotten. Scales with focus depth and dive amount.
+  function drawDepthHaze() {
+    if (diveT < 0.01) return;
+    const a = Math.min(0.44, diveT * (0.05 + focusEra * 0.09));
+    if (a <= 0.01) return;
+    ctx.fillStyle = `rgba(16,26,36,${a})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
   // ---- frame --------------------------------------------------------------
@@ -613,6 +679,7 @@
     for (const d of sorted) drawDistrict(d, pulse);
 
     drawWeatherFront(now);     // precipitation / lightning, in front of the city
+    drawDepthHaze();           // 連動: depth fog thickens as you dive older strata
 
     requestAnimationFrame(frame);
   }

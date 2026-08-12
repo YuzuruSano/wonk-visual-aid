@@ -46,6 +46,49 @@
     return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
   }
 
+  // ---- sketch strokes -----------------------------------------------------
+  // Ported from the old VJ framework's p5.scribble (Janneck Wullschleger,
+  // after Jo Wood's Handy for Processing). Hand-drawn double-stroke lines give
+  // the map an inked, Soul Hackers-map feel. Toggle with the S key.
+  let sketch = true;
+  let jitterTick = 0; // quantised so the jitter "redraws" ~8x/sec, not every frame
+  function rnd(seed) {
+    const s = Math.sin(seed * 127.1 + jitterTick * 311.7) * 43758.5453;
+    return s - Math.floor(s);
+  }
+  function off(seed, mag) { return (rnd(seed) - 0.5) * 2 * mag; }
+
+  // smooth curve through points (Catmull-Rom -> bezier), approximating p5 curveVertex
+  function smooth(pts) {
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i === 0 ? 0 : i - 1], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+      const c1x = p1[0] + (p2[0] - p0[0]) / 6, c1y = p1[1] + (p2[1] - p0[1]) / 6;
+      const c2x = p2[0] - (p3[0] - p1[0]) / 6, c2y = p2[1] - (p3[1] - p1[1]) / 6;
+      ctx.bezierCurveTo(c1x, c1y, c2x, c2y, p2[0], p2[1]);
+    }
+  }
+
+  function scribbleLine(x1, y1, x2, y2, seed) {
+    if (!sketch) { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); return; }
+    const lenSq = (x1 - x2) ** 2 + (y1 - y2) ** 2;
+    let o = 2.4 * cam.zoom;
+    if (o * o * 100 > lenSq) o = Math.sqrt(lenSq) / 10;
+    const diverge = 0.2 + rnd(seed + 9) * 0.2;
+    const mdx = off(seed + 1, o * 1.4), mdy = off(seed + 2, o * 1.4);
+    for (const m of [o, o / 2]) {          // two passes = inked look
+      const P = (k, base) => [base[0] + off(seed + k, m), base[1] + off(seed + k + 50, m)];
+      const p1 = [x1, y1], p2 = [x2, y2];
+      const a = P(0, p1);
+      const b = [mdx + x1 + (x2 - x1) * diverge + off(seed + 3, m), mdy + y1 + (y2 - y1) * diverge + off(seed + 4, m)];
+      const c = [mdx + x1 + 2 * (x2 - x1) * diverge + off(seed + 5, m), mdy + y1 + 2 * (y2 - y1) * diverge + off(seed + 6, m)];
+      const d = P(7, p2);
+      ctx.beginPath();
+      smooth([a, b, c, d]);
+      ctx.stroke();
+    }
+  }
+
   // ---- ground grid --------------------------------------------------------
   function drawGrid() {
     const b = city.bounds;
@@ -75,7 +118,7 @@
       ctx.strokeStyle = active ? withA(A.palette.glow, 0.95) : `rgba(130,235,240,${0.32 + r.weight * 0.35})`;
       ctx.shadowBlur = active ? 18 : 10;
       ctx.shadowColor = active ? A.palette.glow : 'rgba(120,220,230,0.4)';
-      ctx.beginPath(); ctx.moveTo(p1[0], p1[1]); ctx.lineTo(p2[0], p2[1]); ctx.stroke();
+      scribbleLine(p1[0], p1[1], p2[0], p2[1], (r.from.length * 7 + r.to.length * 13) * 3.1);
       ctx.shadowBlur = 0;
       // travelling data pulse
       const tt = (pulse + Math.abs((r.from.length * 7 + r.to.length * 13)) * 0.11) % 1;
@@ -120,12 +163,12 @@
     ctx.lineWidth = (isHover ? 2 : 1.1) * cam.zoom;
     ctx.shadowBlur = (isHover ? 18 : 8) * cam.zoom;
     ctx.shadowColor = pal.glow;
-    for (const [a, b] of [[g00, t00], [g10, t10], [g11, t11], [g01, t01]]) {
-      ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
-    }
+    const sd = (x * 31 + y * 17) * 2.7;
+    const edges = [[g00, t00], [g10, t10], [g11, t11], [g01, t01]];
+    edges.forEach(([a, b], k) => scribbleLine(a[0], a[1], b[0], b[1], sd + k * 13));
     // top outline
-    ctx.beginPath();
-    ctx.moveTo(t00[0], t00[1]); ctx.lineTo(t10[0], t10[1]); ctx.lineTo(t11[0], t11[1]); ctx.lineTo(t01[0], t01[1]); ctx.closePath(); ctx.stroke();
+    const top = [t00, t10, t11, t01, t00];
+    for (let k = 0; k < 4; k++) scribbleLine(top[k][0], top[k][1], top[k + 1][0], top[k + 1][1], sd + 100 + k * 13);
     ctx.shadowBlur = 0;
 
     // window rows on the tall (right) face
@@ -176,6 +219,7 @@
   // ---- frame --------------------------------------------------------------
   function frame(now) {
     const pulse = ((now - t0) / 4000) % 1;
+    jitterTick = Math.floor(now / 110); // ~9 redraws/sec -> living hand-drawn line
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     // vignette background
     const g = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, canvas.width * 0.7);
@@ -219,6 +263,9 @@
     const f = e.deltaY < 0 ? 1.1 : 1 / 1.1;
     cam.zoom = Math.max(0.35, Math.min(3, cam.zoom * f));
   }, { passive: false });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 's' || e.key === 'S') sketch = !sketch;   // toggle hand-drawn strokes
+  });
 
   function updateHud() {
     if (!hovered) { hud.classList.remove('on'); return; }

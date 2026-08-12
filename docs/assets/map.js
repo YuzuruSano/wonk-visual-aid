@@ -479,6 +479,101 @@
     return null;
   }
 
+  // ---- weather (a generative, animated backdrop, re-rolled every visit) ---
+  // Direct descendant of the archived VJ framework: procedural particle/flow
+  // art behind the city. A fresh instance (type + seed) is generated on load;
+  // press W to re-roll, or ?weather=rain to pin one.
+  const WEATHER_TYPES = ['clear', 'rain', 'snow', 'fog', 'storm', 'aurora'];
+  const WEATHER_LABEL = { clear: '☀ 晴 CLEAR', rain: '☂ 雨 RAIN', snow: '❄ 雪 SNOW', fog: '☁ 霧 FOG', storm: '⚡ 雷雨 STORM', aurora: '✦ 極光 AURORA' };
+  const wx = { type: 'clear', drops: [], flakes: [], stars: [], blobs: [], ribbons: [], wind: 0.3, flash: 0, nextBolt: 0, bolt: null, boltUntil: 0 };
+  const rand = (a, b) => a + Math.random() * (b - a);
+
+  function initWeather(type) {
+    wx.type = type; wx.wind = rand(-0.5, 0.9);
+    wx.drops = []; wx.flakes = []; wx.stars = []; wx.blobs = []; wx.ribbons = [];
+    wx.flash = 0; wx.bolt = null; wx.nextBolt = performance.now() + rand(1500, 4000);
+    const W = canvas.width, H = canvas.height, area = (W * H) / 1e6;
+    if (type === 'rain' || type === 'storm') {
+      const n = Math.round((type === 'storm' ? 240 : 160) * area);
+      for (let i = 0; i < n; i++) wx.drops.push({ x: Math.random() * W, y: Math.random() * H, v: rand(9, 16), len: rand(10, 22) });
+    } else if (type === 'snow') {
+      const n = Math.round(140 * area);
+      for (let i = 0; i < n; i++) wx.flakes.push({ x: Math.random() * W, y: Math.random() * H, v: rand(0.6, 1.8), r: rand(1, 3) * dpr, ph: rand(0, 6.28), sw: rand(0.3, 1) });
+    } else if (type === 'clear') {
+      const n = Math.round(150 * area);
+      for (let i = 0; i < n; i++) wx.stars.push({ x: Math.random() * W, y: Math.random() * H * 0.75, r: rand(0.4, 1.6) * dpr, tw: rand(0, 6.28), sp: rand(0.5, 2) });
+    } else if (type === 'fog') {
+      for (let i = 0; i < 7; i++) wx.blobs.push({ x: Math.random() * W, y: rand(H * 0.2, H * 0.85), r: rand(180, 420) * dpr, v: rand(0.2, 0.7) * (Math.random() < 0.5 ? -1 : 1), a: rand(0.03, 0.08) });
+    } else if (type === 'aurora') {
+      const cols = [['#33ffd0', '#7cffea'], ['#8f6bff', '#d3c4ff'], ['#46e6d0', '#8fd6ff'], ['#ff6bd0', '#ffce6b']];
+      const pick = cols[Math.floor(Math.random() * cols.length)];
+      for (let i = 0; i < 3; i++) wx.ribbons.push({ y: rand(H * 0.12, H * 0.5), amp: rand(30, 90) * dpr, len: rand(0.5, 1.2), ph: rand(0, 6.28), sp: rand(0.2, 0.6), col: pick[i % 2], w: rand(60, 140) * dpr });
+    }
+    const el = document.getElementById('weather-tag'); if (el) el.textContent = WEATHER_LABEL[type];
+  }
+  function cycleWeather() { const i = WEATHER_TYPES.indexOf(wx.type); initWeather(WEATHER_TYPES[(i + 1) % WEATHER_TYPES.length]); }
+  function pickWeather() {
+    const q = new URLSearchParams(location.search).get('weather');
+    const t = WEATHER_TYPES.includes(q) ? q : (WEATHER_TYPES.includes(city.weather) ? city.weather : WEATHER_TYPES[Math.floor(Math.random() * WEATHER_TYPES.length)]);
+    initWeather(t);
+  }
+  function makeBolt() {
+    const W = canvas.width; let x = rand(W * 0.2, W * 0.8), y = 0; const pts = [[x, y]];
+    while (y < canvas.height * 0.62) { y += rand(20, 50) * dpr; x += rand(-40, 40) * dpr; pts.push([x, y]); }
+    return pts;
+  }
+  function drawWeatherBack(now) {
+    const W = canvas.width, H = canvas.height, t = now / 1000;
+    if (wx.type === 'aurora') {
+      ctx.globalCompositeOperation = 'lighter';
+      for (const r of wx.ribbons) {
+        ctx.beginPath();
+        for (let x = 0; x <= W; x += 12) {
+          const y = r.y + Math.sin(x * 0.004 * r.len + t * r.sp + r.ph) * r.amp + Math.sin(x * 0.001 + t * 0.2) * r.amp * 0.4;
+          x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = withA(r.col, 0.12); ctx.lineWidth = r.w; ctx.shadowBlur = 40; ctx.shadowColor = r.col; ctx.stroke();
+      }
+      ctx.shadowBlur = 0; ctx.globalCompositeOperation = 'source-over';
+    } else if (wx.type === 'clear') {
+      for (const s of wx.stars) { const a = 0.3 + 0.5 * Math.sin(t * s.sp + s.tw); if (a > 0) { ctx.fillStyle = `rgba(190,240,255,${a})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.28); ctx.fill(); } }
+    } else if (wx.type === 'fog') {
+      for (const b of wx.blobs) {
+        b.x += b.v * dpr; if (b.x > W + b.r) b.x = -b.r; if (b.x < -b.r) b.x = W + b.r;
+        const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+        g.addColorStop(0, `rgba(150,180,190,${b.a})`); g.addColorStop(1, 'rgba(150,180,190,0)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 6.28); ctx.fill();
+      }
+    }
+  }
+  function drawWeatherFront(now) {
+    const W = canvas.width, H = canvas.height;
+    if (wx.type === 'rain' || wx.type === 'storm') {
+      ctx.strokeStyle = wx.type === 'storm' ? 'rgba(150,190,220,0.32)' : 'rgba(150,200,230,0.26)';
+      ctx.lineWidth = 1.1 * dpr;
+      for (const d of wx.drops) {
+        d.x += wx.wind * d.v * dpr; d.y += d.v * dpr * 2.2;
+        if (d.y > H) { d.y = -10; d.x = Math.random() * W; } if (d.x > W) d.x -= W; if (d.x < 0) d.x += W;
+        ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - wx.wind * d.len * dpr, d.y - d.len * dpr); ctx.stroke();
+      }
+    } else if (wx.type === 'snow') {
+      ctx.fillStyle = 'rgba(235,245,255,0.85)';
+      for (const f of wx.flakes) {
+        f.ph += 0.02; f.x += Math.sin(f.ph) * f.sw * dpr + wx.wind * dpr * 0.3; f.y += f.v * dpr;
+        if (f.y > H) { f.y = -5; f.x = Math.random() * W; } if (f.x > W) f.x -= W; if (f.x < 0) f.x += W;
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.28); ctx.fill();
+      }
+    }
+    if (wx.type === 'storm') {
+      if (now > wx.nextBolt) { wx.nextBolt = now + rand(2500, 6000); wx.flash = 1; wx.bolt = makeBolt(); wx.boltUntil = now + 130; }
+      if (wx.flash > 0) { ctx.fillStyle = `rgba(200,220,255,${0.18 * wx.flash})`; ctx.fillRect(0, 0, W, H); wx.flash *= 0.86; if (wx.flash < 0.02) wx.flash = 0; }
+      if (wx.bolt && now < wx.boltUntil) {
+        ctx.strokeStyle = 'rgba(220,235,255,0.9)'; ctx.lineWidth = 2 * dpr; ctx.shadowBlur = 20; ctx.shadowColor = '#cfe6ff';
+        ctx.beginPath(); wx.bolt.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.stroke(); ctx.shadowBlur = 0;
+      } else if (now >= wx.boltUntil) wx.bolt = null;
+    }
+  }
+
   // ---- frame --------------------------------------------------------------
   function frame(now) {
     const pulse = ((now - t0) / 4000) % 1;
@@ -506,6 +601,7 @@
     ctx.fillStyle = g; ctx.fillRect(0, 0, canvas.width, canvas.height);
     updateDepthHud();
 
+    drawWeatherBack(now);      // sky-level generative weather, behind the city
     drawGrid();
     drawGreatRiver(cityRiver(), pulse);   // water sits on the ground, under everything
     drawTributaries(pulse);               // offshoots wiring the river into districts
@@ -515,6 +611,8 @@
     // districts back-to-front
     const sorted = [...city.districts].sort((a, b) => (a.x + a.y) - (b.x + b.y));
     for (const d of sorted) drawDistrict(d, pulse);
+
+    drawWeatherFront(now);     // precipitation / lightning, in front of the city
 
     requestAnimationFrame(frame);
   }
@@ -549,6 +647,7 @@
   }, { passive: false });
   window.addEventListener('keydown', (e) => {
     if (e.key === 's' || e.key === 'S') { sketch = !sketch; return; }   // hand-drawn toggle
+    if (e.key === 'w' || e.key === 'W') { cycleWeather(); return; }     // re-roll the weather
     if (e.key === 'd' || e.key === 'D') { toggleDive(); return; }       // enter/leave the dive
     if (mode === 'dive') {
       if (e.key === 'ArrowDown') { diveStep(1); e.preventDefault(); }   // deeper / older
@@ -656,11 +755,14 @@
     if (bt) bt.addEventListener('click', toggleDive);
     resize();
     fitView();
+    pickWeather();
+    const wt = document.getElementById('weather-tag');
+    if (wt) wt.addEventListener('click', cycleWeather);
     requestAnimationFrame(frame);
   }).catch((err) => {
     document.getElementById('hud-count').textContent = 'LOAD ERROR';
     console.error(err);
   });
 
-  window.addEventListener('resize', () => { resize(); });
+  window.addEventListener('resize', () => { resize(); if (wx.type) initWeather(wx.type); });
 })();

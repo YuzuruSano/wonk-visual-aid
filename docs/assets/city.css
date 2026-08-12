@@ -45,6 +45,11 @@ a:hover { color: var(--amber); }
 #hud-count { position: fixed; top: 34px; right: 34px; z-index: 21; font-size: 12px;
   color: var(--cyan); letter-spacing: 3px; text-shadow: 0 0 8px var(--cyan); }
 
+#weather-tag { margin-top: 10px; display: inline-block; cursor: pointer; font-size: 11px;
+  letter-spacing: 2px; color: var(--ink); border: 1px solid var(--line); padding: 3px 9px;
+  background: rgba(2, 12, 18, 0.5); transition: color .2s, border-color .2s; }
+#weather-tag:hover { color: var(--amber); border-color: var(--amber); }
+
 .legend { position: fixed; bottom: 30px; left: 34px; z-index: 21; font-size: 10px;
   color: var(--dim); letter-spacing: 2px; line-height: 1.8; }
 .legend b { color: var(--ink); font-weight: normal; }

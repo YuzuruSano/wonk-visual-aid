@@ -13,8 +13,8 @@
 set -euo pipefail
 
 # --- config (override via env) ------------------------------------------------
-REMOTE="${DEPLOY_REMOTE:-sizenkai}"                       # ssh alias or user@host
-REMOTE_PATH="${DEPLOY_PATH:-/var/www/wadan-no-ki.tech}"   # server document root
+REMOTE="${DEPLOY_REMOTE:-sizenkai}"                                   # ssh alias or user@host
+REMOTE_PATH="${DEPLOY_PATH:-/home/sizenkai/wadan-no-ki.tech/public_html}"  # server document root
 URL="${DEPLOY_URL:-https://wadan-no-ki.tech/}"
 # -----------------------------------------------------------------------------
 

@@ -30,8 +30,12 @@ fi
 
 echo "→ deploying docs/ → ${REMOTE}:${REMOTE_PATH}/"
 # --delete keeps the server a mirror of docs/ (removes files deleted locally).
+# --chmod forces world-readable perms on landing (dirs 755, files 644) so the
+# web server can read them regardless of the local umask; without this, a
+# strict umask ships 600/700 files and the site 403s.
 # Pass extra flags straight through, e.g. --dry-run.
 rsync -avz --delete \
+  --chmod=D755,F644 \
   --exclude '.DS_Store' \
   "$@" \
   docs/ "${REMOTE}:${REMOTE_PATH}/"

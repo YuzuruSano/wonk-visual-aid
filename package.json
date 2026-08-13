@@ -37,6 +37,7 @@
     "city:preview": "node city/build.mjs && node city/serve.mjs",
     "city:prompt": "node city/generate.mjs prompt",
     "city:procedural": "node city/generate.mjs procedural",
+    "deploy": "bash city/deploy.sh",
     "legacy:dev": "cd archive && export NODE_ENV=development && webpack --mode development --config webpack.dev.js && node app.js"
   },
   "heroku-run-build-script": true

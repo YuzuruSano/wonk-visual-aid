@@ -121,10 +121,27 @@ node city/serve.mjs        # → http://localhost:5050
 npm run city:preview
 ```
 
-### 4. 静的アップ
+### 4. 静的アップ（wadan-no-ki.tech へデプロイ）
 
-`docs/` をそのまま GitHub Pages / Netlify / S3 等に上げるだけ。
-GitHub Pages の場合は Settings → Pages → Source を `docs/` に向ける。
+`docs/` は相対パス構成なので、ドメイン直下に置けばそのまま動く。
+サーバ（`ssh sizenkai` で入れる wadan-no-ki.tech）へは付属スクリプトで一発:
+
+```bash
+npm run deploy              # ビルド → docs/ を rsync で公開ルートへ同期
+./city/deploy.sh --dry-run  # まず差分だけ確認（アップロードしない）
+```
+
+- 既定の同期先: `sizenkai:/var/www/wadan-no-ki.tech`（環境変数で上書き可）
+  - `DEPLOY_REMOTE`（ssh alias か user@host）/ `DEPLOY_PATH`（公開ルート）/ `DEPLOY_URL`
+- `--delete` で docs/ の内容とサーバをミラー（ローカルで消したファイルはサーバでも消える）。
+  初回や不安な時は必ず `--dry-run` で確認する。
+- 前提: `ssh sizenkai` が通ること、`sizenkai` ユーザが `/var/www/wadan-no-ki.tech` に
+  書き込めること（root所有なら `sudo chown -R sizenkai /var/www/wadan-no-ki.tech` 等）。
+
+> このスクリプトは **手元のPC**（`ssh sizenkai` が通る環境）で実行する。
+> Claude Code(web) のサンドボックスには ssh も鍵も無いため、そこからは実行できない。
+
+GitHub Pages / Netlify / S3 等に上げたい場合も、同じく `docs/` をルートに置くだけ。
 
 ---
 
